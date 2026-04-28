@@ -7,7 +7,7 @@
 #include "MainWindow.h"
 #include "views/NodeScene.h"
 #include "views/NodeView.h"
-
+#include "items/NodeItem.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // 1. 创建场景
@@ -19,6 +19,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // 3. 设为中心组件
     setCentralWidget(view);
+
+    NodeItem* node1 = new NodeItem("Number Node");
+    node1->setPos(-150, 0);
+    scene->addItem(node1);
+
+    NodeItem* node2 = new NodeItem("Add Node");
+    node2->setPos(50, 0);
+    scene->addItem(node2);
 
     resize(800, 600);
     setWindowTitle("Qt Node Editor");

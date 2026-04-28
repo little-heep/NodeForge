@@ -20,6 +20,12 @@ add_executable(NodeForge main.cpp
         ui/views/NodeScene.h
         ui/views/NodeView.cpp
         ui/views/NodeView.h
+        ui/items/NodeItem.cpp
+        ui/items/NodeItem.h
+        ui/items/PortItem.cpp
+        ui/items/PortItem.h
+        ui/items/ConnectionItem.cpp
+        ui/items/ConnectionItem.h
 )
 target_link_libraries(NodeForge
         Qt::Core
