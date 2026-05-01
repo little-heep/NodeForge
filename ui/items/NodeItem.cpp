@@ -7,8 +7,8 @@
 #include "NodeItem.h"
 #include "PortItem.h"
 
-NodeItem::NodeItem(const QString &title, QGraphicsItem *parent)
-    : QGraphicsObject(parent), m_title(title)
+NodeItem::NodeItem(const QString &title, NodeModel* model, QGraphicsItem *parent)
+    : m_model(model),QGraphicsObject(parent), m_title(title)
 {
     setFlag(QGraphicsItem::ItemIsMovable);       // 开启拖拽
     setFlag(QGraphicsItem::ItemIsSelectable);    // 开启选中
@@ -44,6 +44,11 @@ void NodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     // 画标题
     painter->setPen(QPen(Qt::white, 1));
     painter->drawText(boundingRect().adjusted(10, 5, -10, -5), Qt::AlignTop | Qt::AlignHCenter, m_title);
+
+    // 额外画出 Model 里的数据
+    if (!m_model->outputs.empty()) {
+        painter->drawText(boundingRect().adjusted(10, 5, -10, -5), Qt::AlignCenter, m_model->outputs[0].toString());
+    }
 }
 
 QVariant NodeItem::itemChange(GraphicsItemChange change, const QVariant &value) {
