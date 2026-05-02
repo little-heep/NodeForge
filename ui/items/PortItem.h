@@ -9,12 +9,14 @@
 #include <QPainter>
 
 class ConnectionItem;
+class NodeModel;
+class NodeGraph;
 
 class PortItem : public QGraphicsItem {
 
 public:
     enum PortType { Input, Output };
-    PortItem(PortType type, QGraphicsItem *parent = nullptr);
+    PortItem(PortType type, NodeModel* model, NodeGraph* graph,int index,QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override { return QRectF(-6, -6, 12, 12); } // 以中心点绘图
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
@@ -35,8 +37,11 @@ private:
     QPointF m_pos;
     QPointF m_end;
     bool m_isTemp;
+    NodeModel* m_model = nullptr;//所属model
+    int m_index;//端口索引
     ConnectionItem *m_tempConn=nullptr;
     QList<ConnectionItem*> m_connections;
+    NodeGraph* m_graph = nullptr;
 };
 
 

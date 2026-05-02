@@ -8,11 +8,16 @@
 #include "ConnectionItem.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
+#include "../../model/NodeModel.h"
+#include "../../core/NodeGraph.h"
 
-PortItem::PortItem(PortType type, QGraphicsItem *parent)
+PortItem::PortItem(PortType type, NodeModel* model, NodeGraph* graph,int index,QGraphicsItem *parent)
     : QGraphicsItem(parent)
 {
     m_type = type;
+    m_model = model;
+    m_index = index;
+    m_graph = graph;
     // 可以根据类型设置不同的颜色或形状
     if (m_type == Input) {
         setToolTip("Input Port");
@@ -49,8 +54,13 @@ void PortItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 void PortItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     if (m_tempConn) {
         // 3. 碰撞检测：看看松开位置有没有别的端口
-        QGraphicsItem* item = scene()->itemAt(event->scenePos(), QTransform());
-        PortItem* targetPort = dynamic_cast<PortItem*>(item);
+        QList<QGraphicsItem*> items = scene()->items(event->scenePos());
+        PortItem* targetPort = nullptr;
+        for (QGraphicsItem* it : items) {
+            if (it == this) continue;
+            auto p = dynamic_cast<PortItem*>(it);
+            if (p) { targetPort = p; break; }
+        }
 
         if (targetPort && targetPort->m_type == Input && targetPort->parentItem() != this->parentItem()) {
             // 连接成功：固化线条
@@ -59,6 +69,9 @@ void PortItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
             m_connections.append(m_tempConn);
             targetPort->m_connections.append(m_tempConn);
             m_tempConn->updatePath();
+            if (m_graph) {
+                m_graph->addConnection(m_model, m_index, targetPort->m_model, targetPort->m_index);
+            }
         } else {
             // 连接失败：删除临时线
             delete m_tempConn;

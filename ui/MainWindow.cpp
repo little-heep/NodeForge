@@ -4,7 +4,6 @@
 #include "views/NodeView.h"
 #include "items/NodeItem.h"
 #include "../model/NodeModel.h"
-#include "../core/NodeGraph.h"
 
 #include <QFileDialog>
 #include <QMenuBar>
@@ -205,14 +204,16 @@ void MainWindow::setupComponentDock()
 
         QString nodeType = item->data(Qt::UserRole).toString();
         if (nodeType == "NumberNode") {
-            auto* numberNode = new NumberNode(0);
-            auto* nodeItem = new NodeItem("Number", numberNode);
+            auto* numberNode = new NumberNode(2);
+            m_graph.addNode(numberNode);
+            auto* nodeItem = new NodeItem("Number",1,1, numberNode, &m_graph);
             nodeItem->setPos(0, 0);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Number Node", 2000);
         } else if (nodeType == "AddNode") {
             auto* addNode = new AddNode();
-            auto* nodeItem = new NodeItem("Add", addNode);
+            m_graph.addNode(addNode);
+            auto* nodeItem = new NodeItem("Add",2,1, addNode, &m_graph);
             nodeItem->setPos(0, 0);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Add Node", 2000);
@@ -240,6 +241,7 @@ void MainWindow::onFileNew()
 {
     // 清空场景
     m_scene->clear();
+    m_graph.clear();
     statusBar()->showMessage("新建文件", 2000);
 }
 
@@ -264,10 +266,12 @@ void MainWindow::onFileSave()
 void MainWindow::onRunClicked()
 {
     statusBar()->showMessage("运行节点图...", 2000);
-  /*  // 点击按钮执行
-    graph.execute();
+    m_graph.execute();
 
-    // 通知 UI 刷新显示内容
-    item3->update();
-    */
+    // 刷新整个场景，让 NodeItem 重新 paint
+    for (QGraphicsItem* item : m_scene->items()) {
+        if (auto nodeItem = dynamic_cast<NodeItem*>(item)) {
+            nodeItem->update();
+        }
+    }
 }

@@ -7,20 +7,32 @@
 #include "NodeItem.h"
 #include "PortItem.h"
 
-NodeItem::NodeItem(const QString &title, NodeModel* model, QGraphicsItem *parent)
-    : m_model(model),QGraphicsObject(parent), m_title(title)
+NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel* model, NodeGraph* graph, QGraphicsItem *parent)
+    : m_model(model),m_input_size(inputsize),m_output_size(outputsize), m_graph(graph), QGraphicsObject(parent), m_title(title)
 {
     setFlag(QGraphicsItem::ItemIsMovable);       // 开启拖拽
     setFlag(QGraphicsItem::ItemIsSelectable);    // 开启选中
     setFlag(QGraphicsItem::ItemSendsGeometryChanges); // 位置改变时发信号
 
     // 创建输入端口 (靠左)
-    PortItem* inPort = new PortItem(PortItem::Input, this);
-    inPort->setPos(0, m_height / 2); // 设在左边界中心
+    if (m_input_size > 0) {
+        qreal spacing = static_cast<qreal>(m_height) / (m_input_size + 1);
+        for (int i = 0; i < m_input_size; ++i) {
+            auto* inPort = new PortItem(PortItem::Input, m_model, m_graph, i, this);
+            qreal y = spacing * (i + 1); // 放在 1..n 的刻度上
+            inPort->setPos(0, y);
+        }
+    }
 
     // 创建输出端口 (靠右)
-    PortItem* outPort = new PortItem(PortItem::Output, this);
-    outPort->setPos(m_width, m_height / 2); // 设在右边界中心
+    if (m_output_size > 0) {
+        qreal spacingOut = static_cast<qreal>(m_height) / (m_output_size + 1);
+        for (int i = 0; i < m_output_size; ++i) {
+            auto* outPort = new PortItem(PortItem::Output, m_model, m_graph, i, this);
+            qreal y = spacingOut * (i + 1);
+            outPort->setPos(m_width, y);
+        }
+    }
 }
 
 QRectF NodeItem::boundingRect() const {

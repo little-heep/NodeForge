@@ -6,6 +6,7 @@
 #define NODEFORGE_MAINWINDOW_H
 
 #include <QMainWindow>
+#include "../core/NodeGraph.h"
 
 class NodeScene;
 class NodeView;
@@ -37,6 +38,7 @@ private:
     QAction* m_showDockAction = nullptr;
     QWidget* m_titleBar=nullptr;
     QWidget* central=nullptr;
+    NodeGraph m_graph;
 
 };
 
