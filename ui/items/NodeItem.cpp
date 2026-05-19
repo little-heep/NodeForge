@@ -6,6 +6,7 @@
 
 #include "NodeItem.h"
 #include "PortItem.h"
+#include <QGraphicsSceneMouseEvent>
 
 NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel* model, NodeGraph* graph, QGraphicsItem *parent)
     : m_model(model),m_input_size(inputsize),m_output_size(outputsize), m_graph(graph), QGraphicsObject(parent), m_title(title)
@@ -73,4 +74,17 @@ QVariant NodeItem::itemChange(GraphicsItemChange change, const QVariant &value) 
         }
     }
     return QGraphicsObject::itemChange(change, value);
+}
+
+void NodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
+    if (m_model && m_model->isEditable()) {
+        if (m_model->editValue(nullptr)) {
+            update(); // 刷新当前节点显示
+            // 可选：想立即刷新全图结果，可执行：
+            // if (m_graph) m_graph->execute();
+        }
+        event->accept();
+        return;
+    }
+    QGraphicsObject::mouseDoubleClickEvent(event);
 }
