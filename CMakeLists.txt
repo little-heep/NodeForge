@@ -30,6 +30,14 @@ add_executable(NodeForge main.cpp
         model/NodeModel.h
         core/NodeGraph.cpp
         core/NodeGraph.h
+        model/nodes/NumberNode.h
+        model/nodes/AddNode.h
+        model/nodes/StringNode.h
+        model/nodes/SubNode.h
+        model/nodes/SubNode.h
+        model/nodes/MulNode.h
+        model/nodes/DivNode.h
+        model/nodes/StringAddNode.h
 )
 target_link_libraries(NodeForge
         Qt::Core

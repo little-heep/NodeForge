@@ -3,7 +3,13 @@
 #include "views/NodeScene.h"
 #include "views/NodeView.h"
 #include "items/NodeItem.h"
-#include "../model/NodeModel.h"
+#include "../model/nodes/AddNode.h"
+#include "../model/nodes/NumberNode.h"
+#include "../model/nodes/SubNode.h"
+#include "../model/nodes/StringNode.h"
+#include "../model/nodes/MulNode.h"
+#include "../model/nodes/DivNode.h"
+#include "../model/nodes/StringAddNode.h"
 
 #include <QFileDialog>
 #include <QMenuBar>
@@ -16,6 +22,9 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QLabel>
+
+#include "../model/nodes/StringNode.h"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     resize(800, 600);
@@ -172,6 +181,19 @@ void MainWindow::setupComponentDock()
     numberItem->setData(Qt::UserRole, "NumberNode");
     componentList->addItem(numberItem);
 
+    QListWidgetItem* stringItem = new QListWidgetItem("   String Node");
+    stringItem->setData(Qt::UserRole, "StringNode");
+    componentList->addItem(stringItem);
+
+    QListWidgetItem* categoryString = new QListWidgetItem("字符运算");
+    categoryString->setFlags(Qt::NoItemFlags);  // 不可选择
+    categoryString->setBackground(QBrush(QColor(240, 240, 240)));
+    componentList->addItem(categoryString);
+
+    QListWidgetItem* spliceItem = new QListWidgetItem("   Splice Node");
+    spliceItem->setData(Qt::UserRole, "SpliceNode");
+    componentList->addItem(spliceItem);
+
     QListWidgetItem* categoryMath = new QListWidgetItem("数学运算");
     categoryMath->setFlags(Qt::NoItemFlags);
     categoryMath->setBackground(QBrush(QColor(240, 240, 240)));
@@ -188,6 +210,10 @@ void MainWindow::setupComponentDock()
     QListWidgetItem* mulItem = new QListWidgetItem("   Multiply Node");
     mulItem->setData(Qt::UserRole, "MultiplyNode");
     componentList->addItem(mulItem);
+
+    QListWidgetItem* divItem = new QListWidgetItem("   Division Node");
+    divItem->setData(Qt::UserRole, "DivisionNode");
+    componentList->addItem(divItem);
 
     layout->addWidget(componentList);
 
@@ -206,7 +232,7 @@ void MainWindow::setupComponentDock()
         if (nodeType == "NumberNode") {
             auto* numberNode = new NumberNode(2);
             m_graph.addNode(numberNode);
-            auto* nodeItem = new NodeItem("Number",1,1, numberNode, &m_graph);
+            auto* nodeItem = new NodeItem("Number",0,1, numberNode, &m_graph);
             nodeItem->setPos(0, 0);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Number Node", 2000);
@@ -217,6 +243,41 @@ void MainWindow::setupComponentDock()
             nodeItem->setPos(0, 0);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Add Node", 2000);
+        }else if (nodeType == "StringNode") {
+            auto* stringNode = new StringNode("hello");
+            m_graph.addNode(stringNode);
+            auto* nodeItem = new NodeItem("String",0,1, stringNode, &m_graph);
+            nodeItem->setPos(0, 0);
+            m_scene->addItem(nodeItem);
+            statusBar()->showMessage("已添加 String Node", 2000);
+        }else if (nodeType == "MultiplyNode") {
+            auto *mulNode = new MulNode();
+            m_graph.addNode(mulNode);
+            auto* nodeItem = new NodeItem("Multiply",2,1, mulNode, &m_graph);
+            nodeItem->setPos(0, 0);
+            m_scene->addItem(nodeItem);
+            statusBar()->showMessage("已添加 Multiply Node", 2000);
+        }else if (nodeType == "DivisionNode") {
+            auto* divNode = new DivNode();
+            m_graph.addNode(divNode);
+            auto* nodeItem = new NodeItem("Division",2,1, divNode, &m_graph);
+            nodeItem->setPos(0, 0);
+            m_scene->addItem(nodeItem);
+            statusBar()->showMessage("已添加 Division Node", 2000);
+        }else if (nodeType == "SubtractNode") {
+            auto* subNode = new SubNode();
+            m_graph.addNode(subNode);
+            auto* nodeItem = new NodeItem("Subtract",2,1, subNode, &m_graph);
+            nodeItem->setPos(0, 0);
+            m_scene->addItem(nodeItem);
+            statusBar()->showMessage("已添加 Subtract Node", 2000);
+        }else if (nodeType == "SpliceNode") {
+            auto* spliceNode=new StringAddNode();
+            m_graph.addNode(spliceNode);
+            auto* nodeItem = new NodeItem("Concat",2,1, spliceNode, &m_graph);
+            nodeItem->setPos(0, 0);
+            m_scene->addItem(nodeItem);
+            statusBar()->showMessage("已添加 Concat Node", 2000);
         }
     });
 

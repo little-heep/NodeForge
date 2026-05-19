@@ -1,0 +1,23 @@
+//
+// Created by Micheal on 2026/5/19.
+//
+
+#ifndef NODEFORGE_MULNODE_H
+#define NODEFORGE_MULNODE_H
+
+#include "../NodeModel.h"
+
+// 乘法节点
+class MulNode : public NodeModel {
+public:
+    MulNode() { inputs.assign(2, 0.0); outputs.push_back(0.0); }
+
+    QString caption() const override { return "Mul"; }
+
+    void compute() override {
+        double res = inputs[0].toDouble() * inputs[1].toDouble();
+        outputs[0] = res;
+    }
+};
+
+#endif //NODEFORGE_MULNODE_H
