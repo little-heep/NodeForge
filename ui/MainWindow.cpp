@@ -10,7 +10,8 @@
 #include "../model/nodes/MulNode.h"
 #include "../model/nodes/DivNode.h"
 #include "../model/nodes/StringAddNode.h"
-
+#include "../model/nodes/CustomJsNode.h"
+#include "dialogs/CustomNodeDialog.h"
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QToolBar>
@@ -215,6 +216,10 @@ void MainWindow::setupComponentDock()
     divItem->setData(Qt::UserRole, "DivisionNode");
     componentList->addItem(divItem);
 
+    QListWidgetItem* customJsItem = new QListWidgetItem("   Custom JS Node");
+    customJsItem->setData(Qt::UserRole, "CustomJsNode");
+    componentList->addItem(customJsItem);
+
     layout->addWidget(componentList);
 
     // 说明文字
@@ -278,6 +283,22 @@ void MainWindow::setupComponentDock()
             nodeItem->setPos(0, 0);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Concat Node", 2000);
+        }else if (nodeType == "CustomJsNode") {
+            CustomNodeDialog dlg(this);
+            if (dlg.exec() != QDialog::Accepted) {
+                return;
+            }
+
+            CustomNodeConfig cfg = dlg.config();
+
+            auto* customNode = new CustomJsNode(cfg.nodeName, cfg.inputCount, cfg.outputCount, cfg.jsCode);
+            m_graph.addNode(customNode);
+
+            auto* nodeItem = new NodeItem(cfg.nodeName, cfg.inputCount, cfg.outputCount, customNode, &m_graph);
+            nodeItem->setPos(0, 0);
+            m_scene->addItem(nodeItem);
+
+            statusBar()->showMessage("已添加 Custom JS Node", 2000);
         }
     });
 

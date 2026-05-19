@@ -11,6 +11,7 @@ find_package(Qt6 COMPONENTS
         Core
         Gui
         Widgets
+        Qml
         REQUIRED)
 
 add_executable(NodeForge main.cpp
@@ -38,11 +39,15 @@ add_executable(NodeForge main.cpp
         model/nodes/MulNode.h
         model/nodes/DivNode.h
         model/nodes/StringAddNode.h
+        model/nodes/CustomJsNode.h
+        ui/dialogs/CustomNodeDialog.cpp
+        ui/dialogs/CustomNodeDialog.h
 )
 target_link_libraries(NodeForge
         Qt::Core
         Qt::Gui
         Qt::Widgets
+        Qt::Qml
 )
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
