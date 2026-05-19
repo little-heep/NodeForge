@@ -7,6 +7,8 @@
 #include "NodeItem.h"
 #include "PortItem.h"
 #include <QGraphicsSceneMouseEvent>
+#include <QStyle>
+#include <QStyleOptionGraphicsItem>
 
 NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel* model, NodeGraph* graph, QGraphicsItem *parent)
     : m_model(model),m_input_size(inputsize),m_output_size(outputsize), m_graph(graph), QGraphicsObject(parent), m_title(title)
@@ -39,8 +41,9 @@ NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel*
 QRectF NodeItem::boundingRect() const {
     return QRectF(0, 0, m_width, m_height);
 }
+void NodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
+    const bool selected = option && (option->state & QStyle::State_Selected);
 
-void NodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
     // 画阴影/背景
     painter->setPen(Qt::NoPen);
     painter->setBrush(QColor(0, 0, 0, 50));
@@ -51,16 +54,24 @@ void NodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     grad.setColorAt(0, QColor(187, 232, 255));
     grad.setColorAt(1, QColor(167, 212, 235));
     painter->setBrush(grad);
-    painter->setPen(QPen(QColor(156, 211, 245), 1.5));
+
+    if (selected) {
+        painter->setPen(QPen(QColor(255, 170, 0), 3));   // 选中时橙色边框
+    } else {
+        painter->setPen(QPen(QColor(156, 211, 245), 1.5));
+    }
+
     painter->drawRoundedRect(boundingRect(), 10, 10);
 
     // 画标题
     painter->setPen(QPen(Qt::white, 1));
-    painter->drawText(boundingRect().adjusted(10, 5, -10, -5), Qt::AlignTop | Qt::AlignHCenter, m_title);
+    painter->drawText(boundingRect().adjusted(10, 5, -10, -5),
+                      Qt::AlignTop | Qt::AlignHCenter, m_title);
 
     // 额外画出 Model 里的数据
-    if (!m_model->outputs.empty()) {
-        painter->drawText(boundingRect().adjusted(10, 5, -10, -5), Qt::AlignCenter, m_model->outputs[0].toString());
+    if (m_model && !m_model->outputs.empty()) {
+        painter->drawText(boundingRect().adjusted(10, 5, -10, -5),
+                          Qt::AlignCenter, m_model->outputs[0].toString());
     }
 }
 

@@ -27,7 +27,6 @@ add_executable(NodeForge main.cpp
         ui/items/PortItem.h
         ui/items/ConnectionItem.cpp
         ui/items/ConnectionItem.h
-        model/NodeModel.cpp
         model/NodeModel.h
         core/NodeGraph.cpp
         core/NodeGraph.h

@@ -19,6 +19,11 @@ public:
     // 必须实现：绘制具体长相
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
+    NodeModel* model() const { return m_model; }
+    NodeGraph* graph() const { return m_graph; }
+    int inputCount() const { return m_input_size; }
+    int outputCount() const { return m_output_size; }
+
 private:
     QString m_title;
     int m_lastInputIndex=0;
