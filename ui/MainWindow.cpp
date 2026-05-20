@@ -177,6 +177,9 @@ void MainWindow::setupComponentDock()
     QListWidgetItem* categoryInput = new QListWidgetItem("输入节点");
     categoryInput->setFlags(Qt::NoItemFlags);  // 不可选择
     categoryInput->setBackground(QBrush(QColor(240, 240, 240)));
+    QFont catFont = categoryInput->font();
+    catFont.setBold(true);
+    categoryInput->setFont(catFont);
     componentList->addItem(categoryInput);
 
     QListWidgetItem* numberItem = new QListWidgetItem("   Number Node");
@@ -190,6 +193,7 @@ void MainWindow::setupComponentDock()
     QListWidgetItem* categoryString = new QListWidgetItem("字符运算");
     categoryString->setFlags(Qt::NoItemFlags);  // 不可选择
     categoryString->setBackground(QBrush(QColor(240, 240, 240)));
+    categoryString->setFont(catFont);
     componentList->addItem(categoryString);
 
     QListWidgetItem* spliceItem = new QListWidgetItem("   Splice Node");
@@ -199,6 +203,7 @@ void MainWindow::setupComponentDock()
     QListWidgetItem* categoryMath = new QListWidgetItem("数学运算");
     categoryMath->setFlags(Qt::NoItemFlags);
     categoryMath->setBackground(QBrush(QColor(240, 240, 240)));
+    categoryMath->setFont(catFont);
     componentList->addItem(categoryMath);
 
     QListWidgetItem* addItem = new QListWidgetItem("   Add Node");
@@ -216,6 +221,12 @@ void MainWindow::setupComponentDock()
     QListWidgetItem* divItem = new QListWidgetItem("   Division Node");
     divItem->setData(Qt::UserRole, "DivisionNode");
     componentList->addItem(divItem);
+
+    QListWidgetItem* categoryCustom = new QListWidgetItem("自定义运算");
+    categoryCustom->setFlags(Qt::NoItemFlags);
+    categoryCustom->setBackground(QBrush(QColor(240, 240, 240)));
+    categoryCustom->setFont(catFont);
+    componentList->addItem(categoryCustom);
 
     QListWidgetItem* customJsItem = new QListWidgetItem("   Custom JS Node");
     customJsItem->setData(Qt::UserRole, "CustomJsNode");
