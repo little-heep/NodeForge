@@ -19,11 +19,7 @@ public:
     PortItem(PortType type, NodeModel* model, NodeGraph* graph,int index,QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override { return QRectF(-6, -6, 12, 12); } // 以中心点绘图
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override {
-        painter->setPen(QPen(Qt::white, 1));
-        painter->setBrush(QColor(100, 200, 100)); // 绿色端口
-        painter->drawEllipse(boundingRect());
-    }
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) override;
 
     void updateConnections();
     void removeConnection(ConnectionItem* conn) { m_connections.removeAll(conn); }

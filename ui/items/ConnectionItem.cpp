@@ -16,7 +16,7 @@ ConnectionItem::ConnectionItem(QGraphicsItem *parent) : QGraphicsPathItem(parent
     setAcceptHoverEvents(false);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setAcceptedMouseButtons(Qt::LeftButton);
-    setPen(QPen(QColor(180, 180, 180), 2)); // 默认颜色
+    //setPen(QPen(QColor(180, 180, 180), 2)); // 默认颜色
 }
 
 void ConnectionItem::updatePath() {
@@ -49,16 +49,35 @@ void ConnectionItem::updatePath() {
     setPath(path);
 }
 
-void ConnectionItem::paint(QPainter *p, const QStyleOptionGraphicsItem *opt, QWidget *w) {
-    QPen pen = this->pen();
-    if (opt && (opt->state & QStyle::State_Selected)) {
-        pen.setColor(QColor(255, 170, 0));
-        pen.setWidthF(3.5);
+void ConnectionItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    QColor normalColor("#9aa8b6");   // light gray-blue for default
+    QColor hoverColor("#6ea8ff");    // light blue on hover
+    QColor selectColor("#2f80ed");   // stronger blue for selected
+
+    QPen pen;
+    if (option && (option->state & QStyle::State_Selected)) {
+        pen = QPen(selectColor, 3.2);
+    } else if (option && (option->state & QStyle::State_MouseOver)) {
+        pen = QPen(hoverColor, 2.6);
     } else {
-        pen.setColor(QColor(180, 180, 180));
-        pen.setWidthF(2.0);
+        pen = QPen(normalColor, 2.0);
     }
-    p->setPen(pen);
-    p->setBrush(Qt::NoBrush);
-    p->drawPath(path());
+
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setJoinStyle(Qt::RoundJoin);
+    painter->setPen(pen);
+    painter->setBrush(Qt::NoBrush);
+
+    // optionally draw a subtle glow for selected
+    if (option && (option->state & QStyle::State_Selected)) {
+        QPen glow(QColor(47,128,237,40), 6);
+        glow.setCapStyle(Qt::RoundCap);
+        painter->setPen(glow);
+        painter->drawPath(path());
+        painter->setPen(pen);
+    }
+
+    painter->drawPath(path());
 }

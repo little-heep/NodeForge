@@ -88,7 +88,6 @@ void NodeView::keyPressEvent(QKeyEvent *event) {
     }
 
     // 3) 先删连线（避免节点删除后端口悬空）
-    // 3) 先删连线（避免节点删除后端口悬空）
     for (ConnectionItem* conn : connectionsToDelete) {
         if (!conn) continue;
 

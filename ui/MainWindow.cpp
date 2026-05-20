@@ -13,35 +13,29 @@
 #include "../model/nodes/CustomJsNode.h"
 #include "items/PortItem.h"
 #include "items/ConnectionItem.h"
-#include "items/NodeItem.h"
 #include "../model/NodeFactory.h"
 #include "dialogs/CustomNodeDialog.h"
 #include <QFileDialog>
 #include <QJsonDocument>
-#include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
 #include <QDockWidget>
 #include <QListWidget>
 #include <QPushButton>
-#include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QLabel>
 
-#include "../model/nodes/StringNode.h"
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     resize(800, 600);
-    setWindowTitle("Qt Node Editor");
-
     setupComponentDock(); // 创建组件面板（初始隐藏）
     setupMenuBar();      // 创建菜单栏
     setupCentralArea();  // 创建中心区域（scene和view）
 
     // 设置状态栏
     statusBar()->showMessage("就绪");
+
 }
 
 MainWindow::~MainWindow() {
@@ -61,9 +55,11 @@ void MainWindow::setupMenuBar()
     QLabel* logoLabel = new QLabel("📊");
     titleLayout->addWidget(logoLabel);
 
-    QLabel* titleLabel = new QLabel("节点编辑器");
+    QLabel* titleLabel = new QLabel("NodeForge");
     titleLayout->addWidget(titleLabel);
-
+    QFont titleFont = titleLabel->font();
+    titleFont.setBold(true);
+    titleLabel->setFont(titleFont);
     // 添加分隔线
     QFrame* line1 = new QFrame();
     line1->setFrameShape(QFrame::VLine);

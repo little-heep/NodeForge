@@ -10,6 +10,8 @@
 #include <QGraphicsScene>
 #include "../../model/NodeModel.h"
 #include "../../core/NodeGraph.h"
+#include <QStyle>
+#include <QStyleOptionGraphicsItem>
 
 PortItem::PortItem(PortType type, NodeModel* model, NodeGraph* graph,int index,QGraphicsItem *parent)
     : QGraphicsItem(parent)
@@ -26,6 +28,7 @@ PortItem::PortItem(PortType type, NodeModel* model, NodeGraph* graph,int index,Q
     }
 
     setAcceptedMouseButtons(Qt::LeftButton);
+    setAcceptHoverEvents(true);
 }
 
 void PortItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
@@ -93,4 +96,25 @@ void PortItem::updateConnections() {
     if (m_tempConn) {
         m_tempConn->updatePath();
     }
+}
+
+void PortItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
+    Q_UNUSED(option);
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    QColor fillColor = (m_type == Input) ? QColor("#3b82f6") : QColor("#06b6d4"); // blue / cyan
+    QColor border = QColor("#9aa8b6");
+
+    // If hovered, draw slightly larger and brighter
+    bool hovered = (option && (option->state & QStyle::State_MouseOver));
+    qreal scale = hovered ? 1.3 : 1.0;
+    QRectF r = boundingRect();
+    QPointF center = r.center();
+    qreal w = r.width() * scale;
+    qreal h = r.height() * scale;
+    QRectF drawRect(center.x() - w/2, center.y() - h/2, w, h);
+
+    painter->setPen(QPen(border, 1));
+    painter->setBrush(fillColor);
+    painter->drawEllipse(drawRect);
 }

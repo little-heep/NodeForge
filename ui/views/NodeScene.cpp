@@ -18,7 +18,7 @@ NodeScene::~NodeScene() {
 void NodeScene::drawBackground(QPainter *painter, const QRectF &rect) {
     QGraphicsScene::drawBackground(painter, rect);
     // 1. 背景底色
-    painter->fillRect(rect, QColor(255, 254, 249));
+    painter->fillRect(rect, QColor(255, 255, 255));
 
     const int gridSize = 25;
 

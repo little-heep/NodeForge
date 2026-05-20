@@ -42,38 +42,64 @@ QRectF NodeItem::boundingRect() const {
     return QRectF(0, 0, m_width, m_height);
 }
 void NodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *) {
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
     const bool selected = option && (option->state & QStyle::State_Selected);
 
-    // 画阴影/背景
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(QColor(0, 0, 0, 50));
-    painter->drawRoundedRect(boundingRect().translated(3, 3), 10, 10);
+    QRectF rect = boundingRect();
+    QRectF shadowRect = rect.translated(2.5, 2.5);
 
-    // 画主体圆角矩形
-    QLinearGradient grad(0, 0, 0, m_height);
-    grad.setColorAt(0, QColor(187, 232, 255));
-    grad.setColorAt(1, QColor(167, 212, 235));
+    // 1) 阴影（轻微）
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(QColor(0, 0, 0, 18)); // very subtle shadow
+    painter->drawRoundedRect(shadowRect, 8, 8);
+
+    // 2) 卡片主体（浅色系渐变）
+    QLinearGradient grad(0, 0, 0, rect.height());
+    grad.setColorAt(0.0, QColor("#ffffff"));
+    grad.setColorAt(1.0, QColor("#f2f6fb"));
     painter->setBrush(grad);
 
-    if (selected) {
-        painter->setPen(QPen(QColor(255, 170, 0), 3));   // 选中时橙色边框
-    } else {
-        painter->setPen(QPen(QColor(156, 211, 245), 1.5));
+    QColor borderColor = selected ? QColor("#60a5fa") : QColor("#d8e2ea");
+    painter->setPen(QPen(borderColor, selected ? 2.2 : 1.0));
+    painter->drawRoundedRect(rect, 8, 8);
+
+    // 3) 顶部标题条（更浅的背景）
+    QRectF titleRect = rect.adjusted(0, 0, 0, -rect.height() + 28);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(QColor("#eef6ff"));
+    painter->drawRoundedRect(titleRect.adjusted(0, 0, 0, 2), 8, 8);
+
+    // 4) 标题文本（加粗）
+    QFont titleFont = painter->font();
+    titleFont.setBold(true);
+    painter->setFont(titleFont);
+    painter->setPen(QColor("#0f172a"));
+    painter->drawText(titleRect.adjusted(10, 0, -10, 0),
+                      Qt::AlignVCenter | Qt::AlignCenter,
+                      m_title);
+
+    // 5) 内容/输出文本（深色）
+    painter->setFont(QFont(painter->font().family(), 10));
+    painter->setPen(QColor("#10243a"));
+    if (m_model && !m_model->outputs.empty()) {
+        QString out = m_model->outputs[0].toString();
+        painter->drawText(rect.adjusted(10, 34, -10, -8),
+                          Qt::AlignCenter | Qt::TextWordWrap,
+                          out);
     }
 
-    painter->drawRoundedRect(boundingRect(), 10, 10);
-
-    // 画标题
-    painter->setPen(QPen(Qt::white, 1));
-    painter->drawText(boundingRect().adjusted(10, 5, -10, -5),
-                      Qt::AlignTop | Qt::AlignHCenter, m_title);
-
-    // 额外画出 Model 里的数据
-    if (m_model && !m_model->outputs.empty()) {
-        painter->drawText(boundingRect().adjusted(10, 5, -10, -5),
-                          Qt::AlignCenter, m_model->outputs[0].toString());
+    // 6) 选中框强调（虚线）
+    if (selected) {
+        painter->setBrush(Qt::NoBrush);
+        QPen p(QColor("#60a5fa"), 1.0, Qt::DashLine);
+        p.setDashPattern({4,4});
+        painter->setPen(p);
+        painter->drawRoundedRect(rect.adjusted(3, 3, -3, -3), 6, 6);
     }
 }
+
+
 
 QVariant NodeItem::itemChange(GraphicsItemChange change, const QVariant &value) {
     if (change == ItemPositionHasChanged) {

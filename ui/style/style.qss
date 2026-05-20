@@ -1,0 +1,173 @@
+/* 全局 */
+* {
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    font-size: 12px;
+}
+
+QWidget {
+    background: #f5f7fb;
+    color: #1f2a37;
+}
+
+QMainWindow {
+    background: #f5f7fb;
+}
+
+/* 标题栏区域 */
+QLabel {
+    color: #1f2a37;
+}
+
+/* 按钮 */
+QPushButton {
+    background: #ffffff;
+    color: #1f2a37;
+    border: 1px solid #d5dbe6;
+    border-radius: 6px;
+    padding: 4px 8px;   /* 比之前更小 */
+}
+
+QPushButton:hover {
+    background: #eef3f9;
+    border: 1px solid #b9c4d3;
+}
+
+QPushButton:pressed {
+    background: #e2e8f0;
+}
+
+QPushButton:disabled {
+    background: #f3f5f8;
+    color: #99a3b2;
+    border-color: #e1e6ee;
+}
+
+/* 运行按钮 */
+QPushButton#runBtn {
+    background: #2f80ed;
+    border: 1px solid #2f80ed;
+    color: white;
+    font-weight: 600;
+}
+
+QPushButton#runBtn:hover {
+    background: #256de0;
+}
+
+/* Dock */
+QDockWidget {
+    background: #f8fafc;
+    border: 1px solid #d8e0ea;
+    titlebar-close-icon: none;
+    titlebar-normal-icon: none;
+}
+
+QDockWidget::title {
+    background: #eef3f9;
+    color: #1f2a37;
+    padding: 6px 10px;
+    border-bottom: 1px solid #d8e0ea;
+    font-weight: bold;  /* 标题加粗 */
+}
+
+/* 列表 */
+QListWidget {
+    background: #ffffff;
+    border: 1px solid #d8e0ea;
+    outline: none;
+    padding: 6px;
+}
+
+QListWidget::item {
+    padding: 7px 10px;
+    margin: 2px 0;
+    border-radius: 6px;
+    color: #1f2a37;
+}
+
+QListWidget::item:hover {
+    background: #eef3f9;
+}
+
+QListWidget::item:selected {
+    background: #dbeafe;
+    color: #0f172a;
+}
+
+/* 输入框 / 文本框 */
+QLineEdit, QTextEdit, QPlainTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    background: #ffffff;
+    color: #1f2a37;
+    border: 1px solid #d5dbe6;
+    border-radius: 6px;
+    padding: 5px 8px;
+    selection-background-color: #93c5fd;
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QSpinBox:focus,
+QDoubleSpinBox:focus, QComboBox:focus {
+    border: 1px solid #60a5fa;
+}
+
+/* 菜单 */
+QMenuBar {
+    background: #f5f7fb;
+    color: #1f2a37;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 6px 10px;
+}
+
+QMenuBar::item:selected {
+    background: #e8eef7;
+}
+
+QMenu {
+    background: #ffffff;
+    border: 1px solid #d8e0ea;
+    padding: 4px;
+}
+
+QMenu::item {
+    padding: 6px 18px;
+    border-radius: 4px;
+}
+
+QMenu::item:selected {
+    background: #dbeafe;
+}
+
+/* 滚动条 */
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical {
+    background: #c2ccd9;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #9fb2c9;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 10px;
+    margin: 2px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #c2ccd9;
+    min-width: 20px;
+    border-radius: 5px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #9fb2c9;
+}
