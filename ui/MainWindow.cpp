@@ -239,49 +239,56 @@ void MainWindow::setupComponentDock()
             auto* numberNode = new NumberNode(2);
             m_graph.addNode(numberNode);
             auto* nodeItem = new NodeItem("Number",0,1, numberNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Number Node", 2000);
         } else if (nodeType == "AddNode") {
             auto* addNode = new AddNode();
             m_graph.addNode(addNode);
             auto* nodeItem = new NodeItem("Add",2,1, addNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Add Node", 2000);
         }else if (nodeType == "StringNode") {
             auto* stringNode = new StringNode("hello");
             m_graph.addNode(stringNode);
             auto* nodeItem = new NodeItem("String",0,1, stringNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 String Node", 2000);
         }else if (nodeType == "MultiplyNode") {
             auto *mulNode = new MulNode();
             m_graph.addNode(mulNode);
             auto* nodeItem = new NodeItem("Multiply",2,1, mulNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Multiply Node", 2000);
         }else if (nodeType == "DivisionNode") {
             auto* divNode = new DivNode();
             m_graph.addNode(divNode);
             auto* nodeItem = new NodeItem("Division",2,1, divNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Division Node", 2000);
         }else if (nodeType == "SubtractNode") {
             auto* subNode = new SubNode();
             m_graph.addNode(subNode);
             auto* nodeItem = new NodeItem("Subtract",2,1, subNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Subtract Node", 2000);
         }else if (nodeType == "SpliceNode") {
             auto* spliceNode=new StringAddNode();
             m_graph.addNode(spliceNode);
             auto* nodeItem = new NodeItem("Concat",2,1, spliceNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
             statusBar()->showMessage("已添加 Concat Node", 2000);
         }else if (nodeType == "CustomJsNode") {
@@ -296,7 +303,8 @@ void MainWindow::setupComponentDock()
             m_graph.addNode(customNode);
 
             auto* nodeItem = new NodeItem(cfg.nodeName, cfg.inputCount, cfg.outputCount, customNode, &m_graph);
-            nodeItem->setPos(0, 0);
+            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            nodeItem->setPos(centerPos);
             m_scene->addItem(nodeItem);
 
             statusBar()->showMessage("已添加 Custom JS Node", 2000);
