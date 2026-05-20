@@ -5,8 +5,13 @@
 // You may need to build the project (run Qt uic code generator) to get "ui_NodeItem.h" resolved
 
 #include "NodeItem.h"
+
+#include <QApplication>
+#include <QGraphicsScene>
+
 #include "PortItem.h"
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsView>
 #include <QStyle>
 #include <QStyleOptionGraphicsItem>
 
@@ -115,10 +120,13 @@ QVariant NodeItem::itemChange(GraphicsItemChange change, const QVariant &value) 
 
 void NodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
     if (m_model && m_model->isEditable()) {
-        if (m_model->editValue(nullptr)) {
-            update(); // 刷新当前节点显示
-            // 可选：想立即刷新全图结果，可执行：
-            // if (m_graph) m_graph->execute();
+        QWidget* parentWidget = QApplication::activeWindow();
+        if (!parentWidget && scene() && !scene()->views().isEmpty()) {
+            parentWidget = scene()->views().first()->window();
+        }
+
+        if (m_model->editValue(parentWidget)) {
+            update();
         }
         event->accept();
         return;

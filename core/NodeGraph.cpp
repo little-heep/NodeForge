@@ -71,31 +71,12 @@ std::vector<NodeModel*> NodeGraph::topoSort() {
 }
 
 void NodeGraph::execute() {
-    qDebug() << "=== NodeGraph execute start ===";
-    qDebug() << "Nodes in graph:";
-    for (auto n : m_nodes) {
-        qDebug() << "  node ptr" << (void*)n << " caption=" << n->caption();
-    }
-    qDebug() << "Connections:";
-    for (const auto &c : m_conns) {
-        qDebug() << "  out=" << (void*)c.outNode << c.outNode->caption()
-                 << "outIdx=" << c.outPortIdx
-                 << " -> in=" << (void*)c.inNode << c.inNode->caption()
-                 << " inIdx=" << c.inPortIdx;
-    }
     // 按拓扑顺序执行并传播
     auto order = topoSort();
-    qDebug() << "Topo order:";
-    for (auto n : order) qDebug() << "  " << (void*)n << n->caption();
     // 对每个节点按顺序 compute，然后传播它的 outputs 到后继节点的 inputs
     for (NodeModel* node : order) {
         if (!node) continue;
-        qDebug() << "Before compute:" << node->caption()
-             << " inputs:" ;
         node->compute();
-        qDebug() << "After compute:" << node->caption()
-                 << " outputs:" ;
-
 
         for (const auto &c : m_conns) {
             if (c.outNode == node && c.outNode && c.inNode) {
