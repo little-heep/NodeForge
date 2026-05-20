@@ -132,3 +132,16 @@ bool NodeGraph::removeNode(NodeModel* node) {
 
     return false;
 }
+
+bool NodeGraph::removeConnection(NodeModel* out, int outIdx, NodeModel* in, int inIdx) {
+    auto oldSize = m_conns.size();
+    m_conns.erase(
+        std::remove_if(m_conns.begin(), m_conns.end(),
+            [&](const Connection& c){
+                return c.outNode == out && c.outPortIdx == outIdx &&
+                       c.inNode == in && c.inPortIdx == inIdx;
+            }),
+        m_conns.end()
+    );
+    return m_conns.size() != oldSize;
+}

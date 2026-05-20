@@ -5,7 +5,6 @@
 // You may need to build the project (run Qt uic code generator) to get "ui_NodeView.h" resolved
 
 #include "NodeView.h"
-#include "NodeView.h"
 #include "../items/NodeItem.h"
 #include "../items/PortItem.h"
 #include "../items/ConnectionItem.h"
@@ -59,17 +58,21 @@ void NodeView::keyPressEvent(QKeyEvent *event) {
         return;
     }
 
-    // 1) 先收集要删除的节点
+    // 1) 收集选中的节点 + 选中的连线
     QList<NodeItem*> nodeItems;
+    QSet<ConnectionItem*> connectionsToDelete;
+
     for (QGraphicsItem* item : selected) {
         if (auto* nodeItem = dynamic_cast<NodeItem*>(item)) {
             nodeItems.append(nodeItem);
+        } else if (auto* connItem = dynamic_cast<ConnectionItem*>(item)) {
+            connectionsToDelete.insert(connItem);
         }
     }
 
-    // 2) 收集这些节点关联的所有连线，避免重复删除
-    QSet<ConnectionItem*> connectionsToDelete;
+    // 2) 把“选中节点”关联的所有连线也加入删除集合（去重）
     for (NodeItem* nodeItem : nodeItems) {
+        if (!nodeItem) continue;
         for (QGraphicsItem* child : nodeItem->childItems()) {
             if (auto* port = dynamic_cast<PortItem*>(child)) {
                 for (ConnectionItem* conn : port->connections()) {
@@ -79,22 +82,41 @@ void NodeView::keyPressEvent(QKeyEvent *event) {
         }
     }
 
-    // 3) 删除连线，同时从端口列表中移除
+    // 3) 先删连线（避免节点删除后端口悬空）
+    // 3) 先删连线（避免节点删除后端口悬空）
     for (ConnectionItem* conn : connectionsToDelete) {
         if (!conn) continue;
 
-        if (conn->startPort()) {
-            conn->startPort()->removeConnection(conn);
+        auto* sp = conn->startPort();
+        auto* ep = conn->endPort();
+
+        // 先从 graph 删除“数据连接”
+        if (sp && ep) {
+            NodeGraph* graph = nullptr;
+
+            // 从端口父节点拿 graph（PortItem 没有 graph() getter）
+            if (auto* n = dynamic_cast<NodeItem*>(sp->parentItem())) graph = n->graph();
+            if (!graph) {
+                if (auto* n = dynamic_cast<NodeItem*>(ep->parentItem())) graph = n->graph();
+            }
+
+            if (graph) {
+                if (NodeModel* outM = sp->model(); NodeModel* inM = ep->model()) {
+                    graph->removeConnection(outM, sp->index(), inM, ep->index());
+                }
+            }
         }
-        if (conn->endPort()) {
-            conn->endPort()->removeConnection(conn);
-        }
+
+        // 再从端口的 UI 连接列表移除
+        if (sp) sp->removeConnection(conn);
+        if (ep) ep->removeConnection(conn);
 
         scene()->removeItem(conn);
         delete conn;
     }
 
-    // 4) 删除节点，同时从 graph 中删除对应 model
+
+    // 4) 再删节点，同时从 graph 删除对应 model
     for (NodeItem* nodeItem : nodeItems) {
         if (!nodeItem) continue;
 

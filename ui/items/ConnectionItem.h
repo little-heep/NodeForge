@@ -28,6 +28,10 @@ private:
     PortItem* m_endPort = nullptr;
     QPointF m_endPoint; // 仅用于拖拽时的临时终点
     bool m_isTemp = false;
+
+protected:
+    void paint(QPainter *p, const QStyleOptionGraphicsItem *opt, QWidget *w) override;
+
 };
 
 #endif //NODEFORGE_CONNECTIONITEM_H

@@ -33,6 +33,7 @@ public:
     void clear();
 
     bool removeNode(NodeModel* node);
+    bool removeConnection(NodeModel* out, int outIdx, NodeModel* in, int inIdx);
 
     const std::vector<NodeModel*>& nodes() const { return m_nodes; }
     const std::vector<Connection>& connections() const { return m_conns; }
@@ -40,8 +41,6 @@ public:
 private:
     // Kahn algorithm — returns execution order (may be partial if cycles exist)
     std::vector<NodeModel*> topoSort();
-
-private:
     std::vector<NodeModel*> m_nodes;      // owned pointers
     std::vector<Connection> m_conns;
 };

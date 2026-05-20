@@ -29,6 +29,11 @@ public:
     void removeConnection(ConnectionItem* conn) { m_connections.removeAll(conn); }
     const QList<ConnectionItem*>& connections() const { return m_connections; }
 
+    NodeModel* model() const { return m_model; }
+    int index() const { return m_index; }
+    PortType portType() const { return m_type; }
+
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
