@@ -32,6 +32,8 @@ public:
     // clear graph and owned nodes
     void clear();
 
+    bool removeNode(NodeModel* node);
+
     const std::vector<NodeModel*>& nodes() const { return m_nodes; }
     const std::vector<Connection>& connections() const { return m_conns; }
 

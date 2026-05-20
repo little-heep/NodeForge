@@ -20,7 +20,8 @@ public:
 protected:
     // 滚轮缩放
     void wheelEvent(QWheelEvent *event) override;
-    // 中键平移需要在 mousePress/Move/Release 中组合，或者简单开启 DragMode
+
+    void keyPressEvent(QKeyEvent *event) override;
 
 };
 

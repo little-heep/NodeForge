@@ -109,3 +109,26 @@ void NodeGraph::clear() {
     m_nodes.clear();
     m_conns.clear();
 }
+
+bool NodeGraph::removeNode(NodeModel* node) {
+    if (!node) return false;
+
+    // 先删除所有关联连接
+    m_conns.erase(
+        std::remove_if(m_conns.begin(), m_conns.end(),
+                       [node](const Connection& c) {
+                           return c.outNode == node || c.inNode == node;
+                       }),
+        m_conns.end()
+    );
+
+    // 再删除节点本身
+    auto it = std::find(m_nodes.begin(), m_nodes.end(), node);
+    if (it != m_nodes.end()) {
+        delete *it;
+        m_nodes.erase(it);
+        return true;
+    }
+
+    return false;
+}

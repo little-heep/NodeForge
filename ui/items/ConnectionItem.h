@@ -20,6 +20,9 @@ public:
     // 关键：刷新曲线形状
     void updatePath();
 
+    PortItem* startPort() const { return m_startPort; }
+    PortItem* endPort() const { return m_endPort; }
+
 private:
     PortItem* m_startPort = nullptr;
     PortItem* m_endPort = nullptr;
