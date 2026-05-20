@@ -14,6 +14,7 @@ public:
     void compute() override { /* 输入节点不需要计算 */ }
     void setValue(double val) { outputs[0] = val; }
     bool isEditable() const override { return true; }
+    QString typeName() const override { return "NumberNode"; }
 
     bool editValue(QWidget* parent) override {
         bool ok = false;
@@ -22,6 +23,21 @@ public:
                                            current, -1e9, 1e9, 4, &ok);
         if (ok) setValue(v);
         return ok;
+    }
+
+    QJsonObject toJson() const override {
+        QJsonObject o = NodeModel::toJson();
+        double v = outputs.empty() ? 0.0 : outputs[0].toDouble();
+        o["value"] = v;
+        return o;
+    }
+    void fromJson(const QJsonObject &o) override {
+        NodeModel::fromJson(o);
+        if (o.contains("value")) {
+            double v = o["value"].toDouble();
+            if (outputs.empty()) outputs.push_back(v);
+            else outputs[0] = v;
+        }
     }
 };
 

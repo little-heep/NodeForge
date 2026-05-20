@@ -33,6 +33,7 @@ public:
     int index() const { return m_index; }
     PortType portType() const { return m_type; }
 
+    void addConnection(ConnectionItem* conn) { m_connections.append(conn); }
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

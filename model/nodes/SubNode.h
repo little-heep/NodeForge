@@ -12,6 +12,7 @@ public:
     SubNode() { inputs.assign(2, 0.0); outputs.push_back(0.0); }
 
     QString caption() const override { return "Sub"; }
+    QString typeName() const override { return "SubNode"; }
 
     void compute() override {
         double res = inputs[0].toDouble() - inputs[1].toDouble();

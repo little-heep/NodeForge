@@ -11,8 +11,13 @@
 #include "../model/nodes/DivNode.h"
 #include "../model/nodes/StringAddNode.h"
 #include "../model/nodes/CustomJsNode.h"
+#include "items/PortItem.h"
+#include "items/ConnectionItem.h"
+#include "items/NodeItem.h"
+#include "../model/NodeFactory.h"
 #include "dialogs/CustomNodeDialog.h"
 #include <QFileDialog>
+#include <QJsonDocument>
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
@@ -330,10 +335,133 @@ void MainWindow::onFileNew()
 void MainWindow::onFileOpen()
 {
     QString fileName = QFileDialog::getOpenFileName(this, "打开文件", "", "Node Files (*.json)");
-    if (!fileName.isEmpty()) {
-        // 加载文件逻辑
-        statusBar()->showMessage("打开文件: " + fileName, 2000);
+    if (fileName.isEmpty()) return;
+
+    QFile f(fileName);
+    if (!f.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, "打开失败", "无法打开文件: " + fileName);
+        return;
     }
+    QByteArray data = f.readAll();
+    f.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    if (doc.isNull() || !doc.isObject()) {
+        QMessageBox::warning(this, "打开失败", "文件格式不正确");
+        return;
+    }
+    QJsonObject root = doc.object();
+
+    // 清空现有场景和数据
+    m_scene->clear();
+    m_graph.clear();
+
+    // 临时映射： id -> NodeModel*, id -> NodeItem*
+    QHash<int, NodeModel*> idToModel;
+    QHash<int, NodeItem*> idToItem;
+
+    // 1) 读取 nodes
+    if (root.contains("nodes") && root["nodes"].isArray()) {
+        QJsonArray nodesArr = root["nodes"].toArray();
+        for (const QJsonValue &v : nodesArr) {
+            if (!v.isObject()) continue;
+            QJsonObject no = v.toObject();
+
+            // 使用 NodeFactory 创建 model（NodeFactory::createNodeFromJson 已实现）
+            NodeModel* model = NodeFactory::createNodeFromJson(no);
+            if (!model) {
+                qWarning() << "Failed to create model for node json:" << no;
+                continue;
+            }
+
+            // 如果 JSON 根对象有 id 字段，NodeFactory 已设置 model->id()
+            m_graph.addNode(model);
+
+            // 从 model 得到输入/输出端口数量（使用 inputs/outputs 长度）
+            int inCount = static_cast<int>(model->inputs.size());
+            int outCount = static_cast<int>(model->outputs.size());
+
+            // NodeItem constructor: NodeItem(const QString &title, int inputsize,int outputsize,NodeModel* model, NodeGraph* graph, QGraphicsItem *parent = nullptr);
+            NodeItem* ni = new NodeItem(model->caption(), inCount, outCount, model, &m_graph);
+            // position 在 JSON 中可能以 node["pos"] 保存
+            if (no.contains("pos") && no["pos"].isObject()) {
+                QJsonObject pos = no["pos"].toObject();
+                double x = pos.contains("x") ? pos["x"].toDouble() : 0.0;
+                double y = pos.contains("y") ? pos["y"].toDouble() : 0.0;
+                ni->setPos(x, y);
+            } else {
+                ni->setPos(0,0);
+            }
+
+            m_scene->addItem(ni);
+
+            int id = no.contains("id") ? no["id"].toInt() : model->id();
+            if (id == 0) id = model->id(); // fallback
+            idToModel[id] = model;
+            idToItem[id] = ni;
+        }
+    }
+
+    // 2) 读取 connections 并重建（同时更新 data-layer 的连接）
+    if (root.contains("connections") && root["connections"].isArray()) {
+        QJsonArray connsArr = root["connections"].toArray();
+        for (const QJsonValue &cv : connsArr) {
+            if (!cv.isObject()) continue;
+            QJsonObject co = cv.toObject();
+            int outId = co["out"].toInt(-1);
+            int outIdx = co["outIdx"].toInt(0);
+            int inId = co["in"].toInt(-1);
+            int inIdx = co["inIdx"].toInt(0);
+
+            NodeModel* outM = idToModel.value(outId, nullptr);
+            NodeModel* inM  = idToModel.value(inId, nullptr);
+            NodeItem* outItem = idToItem.value(outId, nullptr);
+            NodeItem* inItem  = idToItem.value(inId, nullptr);
+
+            if (!outM || !inM || !outItem || !inItem) {
+                qWarning() << "Skipping connection with missing nodes: outId" << outId << "inId" << inId;
+                continue;
+            }
+
+            // 先在 graph 数据层加入连接
+            m_graph.addConnection(outM, outIdx, inM, inIdx);
+
+            // 在 UI 上重建 ConnectionItem：
+            // helper：在 NodeItem 的 childItems 中找到对应类型和索引的 PortItem
+            auto findPort = [](NodeItem* nodeItem, PortItem::PortType type, int idx)->PortItem* {
+                for (QGraphicsItem* child : nodeItem->childItems()) {
+                    if (auto p = dynamic_cast<PortItem*>(child)) {
+                        if (p->portType() == type && p->index() == idx) return p;
+                    }
+                }
+                return nullptr;
+            };
+
+            PortItem* sp = findPort(outItem, PortItem::Output, outIdx);
+            PortItem* ep = findPort(inItem, PortItem::Input, inIdx);
+            if (!sp || !ep) {
+                qWarning() << "Port not found for connection: outId" << outId << "outIdx" << outIdx << "inId" << inId << "inIdx" << inIdx;
+                continue;
+            }
+
+            ConnectionItem* conn = new ConnectionItem();
+            conn->setStartPort(sp);
+            conn->setEndPort(ep);
+            // 注册到端口的列表
+            sp->addConnection(conn);
+            ep->addConnection(conn);
+            m_scene->addItem(conn);
+            conn->updatePath();
+        }
+    }
+
+    // 3) 可选择：执行图计算并刷新显示
+    m_graph.execute();
+    for (QGraphicsItem* item : m_scene->items()) {
+        if (auto nodeItem = dynamic_cast<NodeItem*>(item)) nodeItem->update();
+    }
+
+    statusBar()->showMessage("已加载: " + fileName, 2000);
 }
 
 void MainWindow::onFileSave()
@@ -341,6 +469,7 @@ void MainWindow::onFileSave()
     QString fileName = QFileDialog::getSaveFileName(this, "保存文件", "", "Node Files (*.json)");
     if (!fileName.isEmpty()) {
         // 保存文件逻辑
+        m_view->saveToFile(fileName);
         statusBar()->showMessage("保存文件: " + fileName, 2000);
     }
 }

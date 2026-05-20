@@ -13,6 +13,7 @@ public:
     DivNode() { inputs.assign(2, 0.0); outputs.push_back(0.0); }
 
     QString caption() const override { return "Div"; }
+    QString typeName() const override { return "DivNode"; }
 
     void compute() override {
         double denominator = inputs[1].toDouble();

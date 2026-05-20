@@ -17,6 +17,7 @@ public:
     explicit NodeView(QWidget *parent = nullptr);
 
     ~NodeView() override;
+    bool saveToFile(const QString &path); // 保存图到 JSON 文件
 protected:
     // 滚轮缩放
     void wheelEvent(QWheelEvent *event) override;

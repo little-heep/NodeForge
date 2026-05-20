@@ -22,6 +22,7 @@ public:
     }
 
     QString caption() const override { return m_name; }
+    QString typeName() const override { return "CustomJsNode"; }
 
     void compute() override {
         QJSEngine engine;
@@ -61,6 +62,32 @@ public:
         // JS result -> outputs
         for (int i = 0; i < static_cast<int>(outputs.size()); ++i) {
             outputs[i] = result.property(i).toVariant();
+        }
+    }
+
+    QJsonObject toJson() const override {
+        QJsonObject o = NodeModel::toJson();
+        o["name"] = m_name;
+        o["jsCode"] = m_jsCode;
+        o["inputCount"] = static_cast<int>(inputs.size());
+        o["outputCount"] = static_cast<int>(outputs.size());
+        return o;
+    }
+
+    void fromJson(const QJsonObject &o) override {
+        // IMPORTANT: cannot reconstruct object size here if constructor not called appropriately
+        // We'll fill fields if present, but factory should construct with proper counts.
+        NodeModel::fromJson(o);
+        if (o.contains("name")) m_name = o["name"].toString();
+        if (o.contains("jsCode")) m_jsCode = o["jsCode"].toString();
+        // if input/output sizes present, ensure vectors have right size:
+        if (o.contains("inputCount")) {
+            int inC = o["inputCount"].toInt();
+            inputs.assign(std::max(0, inC), QVariant());
+        }
+        if (o.contains("outputCount")) {
+            int outC = o["outputCount"].toInt();
+            outputs.assign(std::max(0, outC), QVariant());
         }
     }
 

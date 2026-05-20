@@ -43,6 +43,7 @@ private:
     std::vector<NodeModel*> topoSort();
     std::vector<NodeModel*> m_nodes;      // owned pointers
     std::vector<Connection> m_conns;
+    int m_nextId = 1;
 };
 
 #endif //NODEFORGE_NODEGRAPH_H

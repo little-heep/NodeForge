@@ -41,6 +41,8 @@ add_executable(NodeForge main.cpp
         model/nodes/CustomJsNode.h
         ui/dialogs/CustomNodeDialog.cpp
         ui/dialogs/CustomNodeDialog.h
+        model/NodeFactory.cpp
+        model/NodeFactory.h
 )
 target_link_libraries(NodeForge
         Qt::Core

@@ -13,6 +13,7 @@ public:
     MulNode() { inputs.assign(2, 0.0); outputs.push_back(0.0); }
 
     QString caption() const override { return "Mul"; }
+    QString typeName() const override { return "MulNode"; }
 
     void compute() override {
         double res = inputs[0].toDouble() * inputs[1].toDouble();

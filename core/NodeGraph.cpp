@@ -4,6 +4,13 @@ void NodeGraph::addNode(NodeModel* node) {
     if (!node) return;
     // avoid duplicates
     if (std::find(m_nodes.begin(), m_nodes.end(), node) == m_nodes.end()) {
+        // assign id if not set
+        if (node->id() == 0) {
+            node->setId(m_nextId++);
+        } else {
+            // 如果加载时带有 id，确保 m_nextId 跳过已用 id
+            if (node->id() >= m_nextId) m_nextId = node->id() + 1;
+        }
         m_nodes.push_back(node);
     }
 }
@@ -134,13 +141,14 @@ bool NodeGraph::removeNode(NodeModel* node) {
 }
 
 bool NodeGraph::removeConnection(NodeModel* out, int outIdx, NodeModel* in, int inIdx) {
+    if (!out || !in) return false;
     auto oldSize = m_conns.size();
     m_conns.erase(
         std::remove_if(m_conns.begin(), m_conns.end(),
-            [&](const Connection& c){
-                return c.outNode == out && c.outPortIdx == outIdx &&
-                       c.inNode == in && c.inPortIdx == inIdx;
-            }),
+                       [&](const Connection& c) {
+                           return c.outNode == out && c.outPortIdx == outIdx
+                               && c.inNode == in && c.inPortIdx == inIdx;
+                       }),
         m_conns.end()
     );
     return m_conns.size() != oldSize;

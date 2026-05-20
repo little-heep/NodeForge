@@ -16,6 +16,7 @@ public:
     }
 
     QString caption() const override { return "Concat"; }
+    QString typeName() const override { return "StringAddNode"; }
 
     void compute() override {
         QString left = inputs[0].toString();
