@@ -29,6 +29,10 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     resize(800, 600);
+    // 去除系统标题栏
+    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+    setMouseTracking(true);
+
     setupComponentDock(); // 创建组件面板（初始隐藏）
     setupMenuBar();      // 创建菜单栏
     setupCentralArea();  // 创建中心区域（scene和view）
@@ -119,16 +123,16 @@ void MainWindow::setupMenuBar()
     connect(minBtn, &QPushButton::clicked, this, &QWidget::showMinimized);
     titleLayout->addWidget(minBtn);
 
-    QPushButton* maxBtn = new QPushButton("□");
-    maxBtn->setFixedSize(30, 30);
-    maxBtn->setToolTip("最大化/还原");
-    connect(maxBtn, &QPushButton::clicked, [this]() {
+    m_maxBtn = new QPushButton("□");
+    m_maxBtn->setFixedSize(30, 30);
+    m_maxBtn->setToolTip("最大化/还原");
+    connect(m_maxBtn, &QPushButton::clicked, [this]() {
         if (isMaximized())
             showNormal();
         else
             showMaximized();
     });
-    titleLayout->addWidget(maxBtn);
+    titleLayout->addWidget(m_maxBtn);
 
     QPushButton* closeBtn = new QPushButton("×");
     closeBtn->setFixedSize(30, 30);
@@ -136,6 +140,9 @@ void MainWindow::setupMenuBar()
     connect(closeBtn, &QPushButton::clicked, this, &QWidget::close);
     titleLayout->addWidget(closeBtn);
 
+    // 让 MainWindow 捕获 m_titleBar 的鼠标事件用于拖动窗口
+    m_titleBar->setCursor(Qt::SizeAllCursor);
+    m_titleBar->installEventFilter(this);
 }
 
 void MainWindow::setupCentralArea()
@@ -500,4 +507,206 @@ void MainWindow::onRunClicked()
             nodeItem->update();
         }
     }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && !isMaximized()) {
+        m_resizeRegion = hitTest(event->pos());
+        if (m_resizeRegion != None) {
+            m_resizing = true;
+            m_resizePressPos = event->globalPos();
+            m_resizePressGeometry = geometry();
+            event->accept();
+            return;
+        }
+    }
+    // 如果不是缩放操作，则调用基类实现
+    QMainWindow::mousePressEvent(event);
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event)
+{
+    if (m_resizing) {
+        resizeWindow(event->globalPos());
+        event->accept();
+    } else {
+        // 只有在不拖动标题栏、不缩放窗口时才更新光标
+        if (!m_dragging) {
+            updateCursorShape(event->pos());
+        }
+        QMainWindow::mouseMoveEvent(event);
+    }
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && m_resizing) {
+        m_resizing = false;
+        m_resizeRegion = None;
+        // 释放后恢复默认光标
+        updateCursorShape(event->pos());
+    }
+    QMainWindow::mouseReleaseEvent(event);
+}
+
+// 判断鼠标位置在哪个缩放区域
+MainWindow::ResizeRegion MainWindow::hitTest(const QPoint& pos) const
+{
+    if (isMaximized()) {
+        return None; // 最大化时不允许缩放
+    }
+
+    const int margin = 8; // 边缘检测的像素宽度
+    const QRect rect = this->rect();
+
+    bool onLeft = pos.x() >= rect.left() && pos.x() < rect.left() + margin;
+    bool onRight = pos.x() > rect.right() - margin && pos.x() <= rect.right();
+    bool onTop = pos.y() >= rect.top() && pos.y() < rect.top() + margin;
+    bool onBottom = pos.y() > rect.bottom() - margin && pos.y() <= rect.bottom();
+
+    if (onTop && onLeft) return TopLeft;
+    if (onTop && onRight) return TopRight;
+    if (onBottom && onLeft) return BottomLeft;
+    if (onBottom && onRight) return BottomRight;
+    if (onLeft) return Left;
+    if (onRight) return Right;
+    if (onTop) return Top;
+    if (onBottom) return Bottom;
+
+    return None;
+}
+
+// 根据鼠标位置更新光标形状
+void MainWindow::updateCursorShape(const QPoint& pos)
+{
+    if (isMaximized()) {
+        unsetCursor();
+        return;
+    }
+
+    switch (hitTest(pos)) {
+        case Left:
+        case Right:
+            setCursor(Qt::SizeHorCursor);
+            break;
+        case Top:
+        case Bottom:
+            setCursor(Qt::SizeVerCursor);
+            break;
+        case TopLeft:
+        case BottomRight:
+            setCursor(Qt::SizeFDiagCursor);
+            break;
+        case TopRight:
+        case BottomLeft:
+            setCursor(Qt::SizeBDiagCursor);
+            break;
+        default:
+            unsetCursor(); // 不在边缘时恢复默认光标
+            break;
+    }
+}
+
+// 根据鼠标拖动调整窗口大小
+void MainWindow::resizeWindow(const QPoint& globalPos)
+{
+    QRect newGeometry = m_resizePressGeometry;
+    QPoint delta = globalPos - m_resizePressPos;
+
+    const int minW = minimumWidth();
+    const int minH = minimumHeight();
+
+    switch (m_resizeRegion) {
+        case Left:
+            newGeometry.setLeft(m_resizePressGeometry.left() + delta.x());
+            if (newGeometry.width() < minW) newGeometry.setLeft(newGeometry.right() - minW);
+            break;
+        case Right:
+            newGeometry.setRight(m_resizePressGeometry.right() + delta.x());
+            if (newGeometry.width() < minW) newGeometry.setRight(newGeometry.left() + minW);
+            break;
+        case Top:
+            newGeometry.setTop(m_resizePressGeometry.top() + delta.y());
+            if (newGeometry.height() < minH) newGeometry.setTop(newGeometry.bottom() - minH);
+            break;
+        case Bottom:
+            newGeometry.setBottom(m_resizePressGeometry.bottom() + delta.y());
+            if (newGeometry.height() < minH) newGeometry.setBottom(newGeometry.top() + minH);
+            break;
+        case TopLeft:
+            newGeometry.setTopLeft(m_resizePressGeometry.topLeft() + delta);
+            if (newGeometry.width() < minW) newGeometry.setLeft(newGeometry.right() - minW);
+            if (newGeometry.height() < minH) newGeometry.setTop(newGeometry.bottom() - minH);
+            break;
+        case TopRight:
+            newGeometry.setTopRight(m_resizePressGeometry.topRight() + delta);
+            if (newGeometry.width() < minW) newGeometry.setRight(newGeometry.left() + minW);
+            if (newGeometry.height() < minH) newGeometry.setTop(newGeometry.bottom() - minH);
+            break;
+        case BottomLeft:
+            newGeometry.setBottomLeft(m_resizePressGeometry.bottomLeft() + delta);
+            if (newGeometry.width() < minW) newGeometry.setLeft(newGeometry.right() - minW);
+            if (newGeometry.height() < minH) newGeometry.setBottom(newGeometry.top() + minH);
+            break;
+        case BottomRight:
+            newGeometry.setBottomRight(m_resizePressGeometry.bottomRight() + delta);
+            if (newGeometry.width() < minW) newGeometry.setRight(newGeometry.left() + minW);
+            if (newGeometry.height() < minH) newGeometry.setBottom(newGeometry.top() + minH);
+            break;
+        default:
+            break;
+    }
+    setGeometry(newGeometry);
+}
+
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    // 只处理标题栏的事件
+    if (obj == m_titleBar) {
+        auto *mouseEvent = static_cast<QMouseEvent*>(event);
+
+        switch (event->type()) {
+            case QEvent::MouseButtonDblClick:
+                // 双击最大化/还原
+                m_maxBtn->click(); // 模拟点击最大化按钮
+                return true;
+
+            case QEvent::MouseButtonPress:
+                if (mouseEvent->button() == Qt::LeftButton) {
+                    // 如果点击在按钮上，则不处理，让按钮响应
+                    if (m_titleBar->childAt(mouseEvent->pos())) {
+                        return false;
+                    }
+                    // 如果窗口已最大化，则不允许拖动
+                    if (isMaximized()) {
+                        return true;
+                    }
+                    m_dragging = true;
+                    m_dragPosition = mouseEvent->globalPos() - this->pos();
+                    return true;
+                }
+                break;
+
+            case QEvent::MouseMove:
+                if (m_dragging && (mouseEvent->buttons() & Qt::LeftButton)) {
+                    move(mouseEvent->globalPos() - m_dragPosition);
+                    return true;
+                }
+                break;
+
+            case QEvent::MouseButtonRelease:
+                if (mouseEvent->button() == Qt::LeftButton) {
+                    m_dragging = false;
+                    return true;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+    // 其他对象的事件交给基类处理
+    return QMainWindow::eventFilter(obj, event);
 }
