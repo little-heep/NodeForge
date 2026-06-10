@@ -8,11 +8,13 @@
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QPushButton>
+#include <QUndoStack>
 
 #include "../core/NodeGraph.h"
 
 class NodeScene;
 class NodeView;
+class GraphEditorContext;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -28,6 +30,7 @@ private slots:
     void onFileSave();
     void onRunClicked();
     void toggleComponentDock();
+    void onDeleteRequested();
 
 private:
     void setupMenuBar();
@@ -43,6 +46,11 @@ private:
     QWidget* central=nullptr;
     QPushButton* m_maxBtn = nullptr;
     NodeGraph m_graph;
+
+    QUndoStack* m_undoStack = nullptr;
+    GraphEditorContext* m_editor = nullptr;
+    QAction* m_undoAction = nullptr;
+    QAction* m_redoAction = nullptr;
 
     // --- 用于窗口拖动 ---
     bool m_dragging = false;
@@ -68,7 +76,6 @@ protected: // <<<<<<<<<<<<<<<<<<< 添加 protected 区域
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-
 
 };
 

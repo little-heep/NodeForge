@@ -43,6 +43,10 @@ add_executable(NodeForge main.cpp
         ui/dialogs/CustomNodeDialog.h
         model/NodeFactory.cpp
         model/NodeFactory.h
+        ui/commands/GraphUndoCommands.cpp
+        ui/commands/GraphUndoCommands.h
+        ui/GraphEditorContext.cpp
+        ui/GraphEditorContext.h
 )
 target_link_libraries(NodeForge
         Qt::Core

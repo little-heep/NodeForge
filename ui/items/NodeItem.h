@@ -9,10 +9,12 @@
 #include <QPainter>
 #include "../../model/NodeModel.h"
 class NodeGraph;
+class GraphEditorContext;
+
 class NodeItem : public QGraphicsObject {
     Q_OBJECT
 public:
-    explicit NodeItem(const QString &title, int inputsize,int outputsize,NodeModel* model, NodeGraph* graph, QGraphicsItem *parent = nullptr);
+    explicit NodeItem(const QString &title, int inputsize,int outputsize,NodeModel* model, NodeGraph* graph, GraphEditorContext* editor, QGraphicsItem *parent = nullptr);
 
     // 必须实现：定义碰撞和绘制区域
     QRectF boundingRect() const override;
@@ -35,9 +37,14 @@ private:
     int m_input_size = 1;
     int m_output_size = 1;
 
+    GraphEditorContext* m_editor = nullptr;
+    QPointF m_dragStartPos;
+
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 };
 

@@ -23,5 +23,10 @@ public:
         QString right = inputs[1].toString();
         outputs[0] = left + right;
     }
+    void fromJson(const QJsonObject &o) override {
+        Q_UNUSED(o);
+        inputs.assign(2, 0.0);
+        outputs.assign(1, 0.0);
+    }
 };
 #endif //NODEFORGE_STRINGADDNODE_H

@@ -15,7 +15,11 @@ public:
         outputs[0] = res;
     }
     QString typeName() const override { return "AddNode"; }
-
+    void fromJson(const QJsonObject &o) override {
+        Q_UNUSED(o);
+        inputs.assign(2, 0.0);
+        outputs.assign(1, 0.0);
+    }
 };
 
 #endif //NODEFORGE_ADDNODE_H

@@ -19,6 +19,11 @@ public:
         double res = inputs[0].toDouble() * inputs[1].toDouble();
         outputs[0] = res;
     }
+    void fromJson(const QJsonObject &o) override {
+        Q_UNUSED(o);
+        inputs.assign(2, 0.0);
+        outputs.assign(1, 0.0);
+    }
 };
 
 #endif //NODEFORGE_MULNODE_H

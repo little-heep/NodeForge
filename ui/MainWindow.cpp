@@ -25,17 +25,24 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QLabel>
+#include "GraphEditorContext.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     resize(800, 600);
-    // 去除系统标题栏
+
+     // 去除系统标题栏
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
     setMouseTracking(true);
 
+    m_undoStack = new QUndoStack(this);
+    m_undoStack->setUndoLimit(200); // 限制撤销历史长度
     setupComponentDock(); // 创建组件面板（初始隐藏）
     setupMenuBar();      // 创建菜单栏
     setupCentralArea();  // 创建中心区域（scene和view）
+
+    m_editor = new GraphEditorContext(m_scene, &m_graph, m_undoStack, this);
+    connect(m_view, &NodeView::deleteRequested, this, &MainWindow::onDeleteRequested);
 
     // 设置状态栏
     statusBar()->showMessage("就绪");
@@ -87,6 +94,28 @@ void MainWindow::setupMenuBar()
     saveBtn->setShortcut(QKeySequence::Save);
     connect(saveBtn, &QPushButton::clicked, this, &MainWindow::onFileSave);
     titleLayout->addWidget(saveBtn);
+
+    //撤销、重做
+    m_undoAction = m_undoStack->createUndoAction(this, tr("撤销"));
+    m_undoAction->setShortcut(QKeySequence::Undo);
+    m_undoAction->setShortcutContext(Qt::ApplicationShortcut);
+    addAction(m_undoAction);
+
+    m_redoAction = m_undoStack->createRedoAction(this, tr("重做"));
+    m_redoAction->setShortcut(QKeySequence::Redo);
+    m_redoAction->setShortcutContext(Qt::ApplicationShortcut);
+    addAction(m_redoAction);
+
+    // 可选：按钮点击仍然保留
+    auto* undoBtn = new QPushButton("↶ 撤销");
+    undoBtn->setToolTip("撤销 (Ctrl+Z)");
+    connect(undoBtn, &QPushButton::clicked, m_undoAction, &QAction::trigger);
+    titleLayout->addWidget(undoBtn);
+
+    auto* redoBtn = new QPushButton("↷ 重做");
+    redoBtn->setToolTip("重做 (Ctrl+Y)");
+    connect(redoBtn, &QPushButton::clicked, m_redoAction, &QAction::trigger);
+    titleLayout->addWidget(redoBtn);
 
     // 添加分隔线
     QFrame* line2 = new QFrame();
@@ -249,65 +278,74 @@ void MainWindow::setupComponentDock()
 
     // 双击添加节点到场景
     connect(componentList, &QListWidget::itemDoubleClicked,
-            [this, componentList](QListWidgetItem* item) {
+            [this](QListWidgetItem* item) {
         if (item->flags() == Qt::NoItemFlags) return;  // 分类项不可添加
 
         QString nodeType = item->data(Qt::UserRole).toString();
+        QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
         if (nodeType == "NumberNode") {
-            auto* numberNode = new NumberNode(2);
-            m_graph.addNode(numberNode);
-            auto* nodeItem = new NodeItem("Number",0,1, numberNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
+            // auto* numberNode = new NumberNode(2);
+            // m_graph.addNode(numberNode);
+            // auto* nodeItem = new NodeItem("Number",0,1, numberNode, &m_graph);
+            // nodeItem->setPos(centerPos);
+            // m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "NumberNode";
+            QJsonObject data;
+            data["value"] = 0;
+            nodeObj["data"] = data;
+
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 Number Node", 2000);
         } else if (nodeType == "AddNode") {
-            auto* addNode = new AddNode();
-            m_graph.addNode(addNode);
-            auto* nodeItem = new NodeItem("Add",2,1, addNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "AddNode";
+            QJsonObject data;
+            data["value"] = 0;
+            nodeObj["data"] = data;
+
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 Add Node", 2000);
         }else if (nodeType == "StringNode") {
-            auto* stringNode = new StringNode("hello");
-            m_graph.addNode(stringNode);
-            auto* nodeItem = new NodeItem("String",0,1, stringNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "StringNode";
+            QJsonObject data;
+            data["value"] = "hello";
+            nodeObj["data"] = data;
+
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 String Node", 2000);
         }else if (nodeType == "MultiplyNode") {
-            auto *mulNode = new MulNode();
-            m_graph.addNode(mulNode);
-            auto* nodeItem = new NodeItem("Multiply",2,1, mulNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "MulNode";
+            QJsonObject data;
+            nodeObj["data"] = data;
+
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 Multiply Node", 2000);
         }else if (nodeType == "DivisionNode") {
-            auto* divNode = new DivNode();
-            m_graph.addNode(divNode);
-            auto* nodeItem = new NodeItem("Division",2,1, divNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "DivNode";
+            QJsonObject data;
+            nodeObj["data"] = data;
+
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 Division Node", 2000);
         }else if (nodeType == "SubtractNode") {
-            auto* subNode = new SubNode();
-            m_graph.addNode(subNode);
-            auto* nodeItem = new NodeItem("Subtract",2,1, subNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "SubNode";
+            QJsonObject data;
+            nodeObj["data"] = data;
+
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 Subtract Node", 2000);
         }else if (nodeType == "SpliceNode") {
-            auto* spliceNode=new StringAddNode();
-            m_graph.addNode(spliceNode);
-            auto* nodeItem = new NodeItem("Concat",2,1, spliceNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "StringAddNode";
+            QJsonObject data;
+            nodeObj["data"] = data;
+
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 Concat Node", 2000);
         }else if (nodeType == "CustomJsNode") {
             CustomNodeDialog dlg(this);
@@ -317,14 +355,23 @@ void MainWindow::setupComponentDock()
 
             CustomNodeConfig cfg = dlg.config();
 
-            auto* customNode = new CustomJsNode(cfg.nodeName, cfg.inputCount, cfg.outputCount, cfg.jsCode);
-            m_graph.addNode(customNode);
+            // auto* customNode = new CustomJsNode(cfg.nodeName, cfg.inputCount, cfg.outputCount, cfg.jsCode);
+            // m_graph.addNode(customNode);
+            //
+            // auto* nodeItem = new NodeItem(cfg.nodeName, cfg.inputCount, cfg.outputCount, customNode, &m_graph);
+            //QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
+            // nodeItem->setPos(centerPos);
+            // m_scene->addItem(nodeItem);
+            QJsonObject nodeObj;
+            nodeObj["type"] = "CustomJsNode";
+            QJsonObject data;
+            data["name"] = cfg.nodeName;
+            data["inputCount"] = cfg.inputCount;
+            data["outputCount"] = cfg.outputCount;
+            data["jsCode"] = cfg.jsCode;
+            nodeObj["data"] = data;
 
-            auto* nodeItem = new NodeItem(cfg.nodeName, cfg.inputCount, cfg.outputCount, customNode, &m_graph);
-            QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-            nodeItem->setPos(centerPos);
-            m_scene->addItem(nodeItem);
-
+            m_editor->requestAddNode(nodeObj, centerPos);
             statusBar()->showMessage("已添加 Custom JS Node", 2000);
         }
     });
@@ -349,8 +396,9 @@ void MainWindow::toggleComponentDock()
 void MainWindow::onFileNew()
 {
     // 清空场景
-    m_scene->clear();
-    m_graph.clear();
+    m_editor->clearDocument();
+    m_undoStack->clear();
+    m_undoStack->setClean();
     statusBar()->showMessage("新建文件", 2000);
 }
 
@@ -374,114 +422,9 @@ void MainWindow::onFileOpen()
     }
     QJsonObject root = doc.object();
 
-    // 清空现有场景和数据
-    m_scene->clear();
-    m_graph.clear();
-
-    // 临时映射： id -> NodeModel*, id -> NodeItem*
-    QHash<int, NodeModel*> idToModel;
-    QHash<int, NodeItem*> idToItem;
-
-    // 1) 读取 nodes
-    if (root.contains("nodes") && root["nodes"].isArray()) {
-        QJsonArray nodesArr = root["nodes"].toArray();
-        for (const QJsonValue &v : nodesArr) {
-            if (!v.isObject()) continue;
-            QJsonObject no = v.toObject();
-
-            // 使用 NodeFactory 创建 model（NodeFactory::createNodeFromJson 已实现）
-            NodeModel* model = NodeFactory::createNodeFromJson(no);
-            if (!model) {
-                qWarning() << "Failed to create model for node json:" << no;
-                continue;
-            }
-
-            // 如果 JSON 根对象有 id 字段，NodeFactory 已设置 model->id()
-            m_graph.addNode(model);
-
-            // 从 model 得到输入/输出端口数量（使用 inputs/outputs 长度）
-            int inCount = static_cast<int>(model->inputs.size());
-            int outCount = static_cast<int>(model->outputs.size());
-
-            // NodeItem constructor: NodeItem(const QString &title, int inputsize,int outputsize,NodeModel* model, NodeGraph* graph, QGraphicsItem *parent = nullptr);
-            NodeItem* ni = new NodeItem(model->caption(), inCount, outCount, model, &m_graph);
-            // position 在 JSON 中可能以 node["pos"] 保存
-            if (no.contains("pos") && no["pos"].isObject()) {
-                QJsonObject pos = no["pos"].toObject();
-                double x = pos.contains("x") ? pos["x"].toDouble() : 0.0;
-                double y = pos.contains("y") ? pos["y"].toDouble() : 0.0;
-                ni->setPos(x, y);
-            } else {
-                ni->setPos(0,0);
-            }
-
-            m_scene->addItem(ni);
-
-            int id = no.contains("id") ? no["id"].toInt() : model->id();
-            if (id == 0) id = model->id(); // fallback
-            idToModel[id] = model;
-            idToItem[id] = ni;
-        }
-    }
-
-    // 2) 读取 connections 并重建（同时更新 data-layer 的连接）
-    if (root.contains("connections") && root["connections"].isArray()) {
-        QJsonArray connsArr = root["connections"].toArray();
-        for (const QJsonValue &cv : connsArr) {
-            if (!cv.isObject()) continue;
-            QJsonObject co = cv.toObject();
-            int outId = co["out"].toInt(-1);
-            int outIdx = co["outIdx"].toInt(0);
-            int inId = co["in"].toInt(-1);
-            int inIdx = co["inIdx"].toInt(0);
-
-            NodeModel* outM = idToModel.value(outId, nullptr);
-            NodeModel* inM  = idToModel.value(inId, nullptr);
-            NodeItem* outItem = idToItem.value(outId, nullptr);
-            NodeItem* inItem  = idToItem.value(inId, nullptr);
-
-            if (!outM || !inM || !outItem || !inItem) {
-                qWarning() << "Skipping connection with missing nodes: outId" << outId << "inId" << inId;
-                continue;
-            }
-
-            // 先在 graph 数据层加入连接
-            m_graph.addConnection(outM, outIdx, inM, inIdx);
-
-            // 在 UI 上重建 ConnectionItem：
-            // helper：在 NodeItem 的 childItems 中找到对应类型和索引的 PortItem
-            auto findPort = [](NodeItem* nodeItem, PortItem::PortType type, int idx)->PortItem* {
-                for (QGraphicsItem* child : nodeItem->childItems()) {
-                    if (auto p = dynamic_cast<PortItem*>(child)) {
-                        if (p->portType() == type && p->index() == idx) return p;
-                    }
-                }
-                return nullptr;
-            };
-
-            PortItem* sp = findPort(outItem, PortItem::Output, outIdx);
-            PortItem* ep = findPort(inItem, PortItem::Input, inIdx);
-            if (!sp || !ep) {
-                qWarning() << "Port not found for connection: outId" << outId << "outIdx" << outIdx << "inId" << inId << "inIdx" << inIdx;
-                continue;
-            }
-
-            ConnectionItem* conn = new ConnectionItem();
-            conn->setStartPort(sp);
-            conn->setEndPort(ep);
-            // 注册到端口的列表
-            sp->addConnection(conn);
-            ep->addConnection(conn);
-            m_scene->addItem(conn);
-            conn->updatePath();
-        }
-    }
-
-    // 3) 可选择：执行图计算并刷新显示
-    m_graph.execute();
-    for (QGraphicsItem* item : m_scene->items()) {
-        if (auto nodeItem = dynamic_cast<NodeItem*>(item)) nodeItem->update();
-    }
+    m_editor->rebuildFromJson(root);
+    m_undoStack->clear();
+    m_undoStack->setClean();
 
     statusBar()->showMessage("已加载: " + fileName, 2000);
 }
@@ -665,8 +608,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     // 只处理标题栏的事件
     if (obj == m_titleBar) {
-        auto *mouseEvent = static_cast<QMouseEvent*>(event);
-
+        auto *mouseEvent = dynamic_cast<QMouseEvent*>(event);
+        if (!mouseEvent) {
+            return QMainWindow::eventFilter(obj, event);
+        }
         switch (event->type()) {
             case QEvent::MouseButtonDblClick:
                 // 双击最大化/还原
@@ -709,4 +654,13 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     }
     // 其他对象的事件交给基类处理
     return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::onDeleteRequested()
+{
+    if (!m_view || !m_view->scene()) return;
+    const auto selected = m_view->scene()->selectedItems();
+    if (selected.isEmpty()) return;
+
+    m_editor->requestDeleteSelection(selected);
 }

@@ -14,9 +14,10 @@
 #include <QGraphicsView>
 #include <QStyle>
 #include <QStyleOptionGraphicsItem>
+#include "../GraphEditorContext.h"
 
-NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel* model, NodeGraph* graph, QGraphicsItem *parent)
-    : m_model(model),m_input_size(inputsize),m_output_size(outputsize), m_graph(graph), QGraphicsObject(parent), m_title(title)
+NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel* model, NodeGraph* graph,GraphEditorContext* editor, QGraphicsItem *parent)
+    : m_model(model),m_input_size(inputsize),m_output_size(outputsize), m_graph(graph), QGraphicsObject(parent), m_title(title),m_editor(editor)
 {
     setFlag(QGraphicsItem::ItemIsMovable);       // 开启拖拽
     setFlag(QGraphicsItem::ItemIsSelectable);    // 开启选中
@@ -26,7 +27,7 @@ NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel*
     if (m_input_size > 0) {
         qreal spacing = static_cast<qreal>(m_height) / (m_input_size + 1);
         for (int i = 0; i < m_input_size; ++i) {
-            auto* inPort = new PortItem(PortItem::Input, m_model, m_graph, i, this);
+            auto* inPort = new PortItem(PortItem::Input, m_model, m_graph, i, m_editor,this);
             qreal y = spacing * (i + 1); // 放在 1..n 的刻度上
             inPort->setPos(0, y);
         }
@@ -36,7 +37,7 @@ NodeItem::NodeItem(const QString &title,int inputsize,int outputsize, NodeModel*
     if (m_output_size > 0) {
         qreal spacingOut = static_cast<qreal>(m_height) / (m_output_size + 1);
         for (int i = 0; i < m_output_size; ++i) {
-            auto* outPort = new PortItem(PortItem::Output, m_model, m_graph, i, this);
+            auto* outPort = new PortItem(PortItem::Output, m_model, m_graph, i, m_editor,this);
             qreal y = spacingOut * (i + 1);
             outPort->setPos(m_width, y);
         }
@@ -119,17 +120,31 @@ QVariant NodeItem::itemChange(GraphicsItemChange change, const QVariant &value) 
 }
 
 void NodeItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
-    if (m_model && m_model->isEditable()) {
+    if (m_model && m_model->isEditable() && m_editor) {
         QWidget* parentWidget = QApplication::activeWindow();
         if (!parentWidget && scene() && !scene()->views().isEmpty()) {
             parentWidget = scene()->views().first()->window();
         }
 
-        if (m_model->editValue(parentWidget)) {
-            update();
-        }
+        m_editor->requestEditNodeValue(m_model, parentWidget);
+        update();
         event->accept();
         return;
     }
+
     QGraphicsObject::mouseDoubleClickEvent(event);
+}
+
+void NodeItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        m_dragStartPos = pos();
+    }
+    QGraphicsObject::mousePressEvent(event);
+}
+void NodeItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    QGraphicsObject::mouseReleaseEvent(event);
+
+    if (m_editor && m_model && m_dragStartPos != pos()) {
+        m_editor->requestMoveNode(this, m_dragStartPos, pos());
+    }
 }

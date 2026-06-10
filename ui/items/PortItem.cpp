@@ -12,14 +12,16 @@
 #include "../../core/NodeGraph.h"
 #include <QStyle>
 #include <QStyleOptionGraphicsItem>
+#include "../GraphEditorContext.h"
 
-PortItem::PortItem(PortType type, NodeModel* model, NodeGraph* graph,int index,QGraphicsItem *parent)
+PortItem::PortItem(PortType type, NodeModel* model, NodeGraph* graph,int index,GraphEditorContext* editor,QGraphicsItem *parent)
     : QGraphicsItem(parent)
 {
     m_type = type;
     m_model = model;
     m_index = index;
     m_graph = graph;
+    m_editor = editor;
     // 可以根据类型设置不同的颜色或形状
     if (m_type == Input) {
         setToolTip("Input Port");
@@ -67,18 +69,23 @@ void PortItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
         if (targetPort && targetPort->m_type == Input && targetPort->parentItem() != this->parentItem()) {
             // 连接成功：固化线条
-            m_tempConn->setEndPort(targetPort);
-            //m_tempConn->setEndPoint(QPointF()); // 清除临时点
-            m_connections.append(m_tempConn);
-            targetPort->m_connections.append(m_tempConn);
-            m_tempConn->updatePath();
-            if (m_graph) {
-                m_graph->addConnection(m_model, m_index, targetPort->m_model, targetPort->m_index);
+            // m_tempConn->setEndPort(targetPort);
+            // //m_tempConn->setEndPoint(QPointF()); // 清除临时点
+            // m_connections.append(m_tempConn);
+            // targetPort->m_connections.append(m_tempConn);
+            // m_tempConn->updatePath();
+            // if (m_graph) {
+            //     m_graph->addConnection(m_model, m_index, targetPort->m_model, targetPort->m_index);
+            // }
+            if (m_editor) {
+                m_editor->requestConnect(this, targetPort);
             }
-        } else {
-            // 连接失败：删除临时线
-            delete m_tempConn;
         }
+        // 不管成功还是失败，临时线都要删掉
+        if (scene()) {
+            scene()->removeItem(m_tempConn);
+        }
+        delete m_tempConn;
         m_tempConn = nullptr;
         event->accept();
         return;
