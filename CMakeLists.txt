@@ -12,6 +12,7 @@ find_package(Qt6 COMPONENTS
         Gui
         Widgets
         Qml
+        PrintSupport
         REQUIRED)
 
 add_executable(NodeForge main.cpp
@@ -47,12 +48,25 @@ add_executable(NodeForge main.cpp
         ui/commands/GraphUndoCommands.h
         ui/GraphEditorContext.cpp
         ui/GraphEditorContext.h
+        thirdparty/qcustomplot/qcustomplot.cpp
+        model/nodes/SineWaveNode.h
+        model/nodes/NoiseNode.h
+        model/nodes/SignalAddNode.h
+        model/nodes/LowPassFilterNode.h
+        model/nodes/PlotNode.h
+        ui/dialogs/SignalPlotDialog.cpp
+        ui/dialogs/SignalPlotDialog.h
+        ui/dialogs/SineWaveDialog.cpp
+        ui/dialogs/SineWaveDialog.h
+        ui/dialogs/NoiseDialog.cpp
+        ui/dialogs/NoiseDialog.h
 )
 target_link_libraries(NodeForge
         Qt::Core
         Qt::Gui
         Qt::Widgets
         Qt::Qml
+        Qt::PrintSupport
 )
 
 if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)

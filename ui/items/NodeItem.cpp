@@ -86,10 +86,10 @@ void NodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
                       m_title);
 
     // 5) 内容/输出文本（深色）
-    painter->setFont(QFont(painter->font().family(), 10));
+    painter->setFont(QFont(painter->font().family(), 8));
     painter->setPen(QColor("#10243a"));
     if (m_model && !m_model->outputs.empty()) {
-        QString out = m_model->outputs[0].toString();
+        QString out = m_model->showValue();
         painter->drawText(rect.adjusted(10, 34, -10, -8),
                           Qt::AlignCenter | Qt::TextWordWrap,
                           out);

@@ -21,6 +21,7 @@ public:
     // 基本接口
     virtual QString caption() const = 0; // 节点显示名
     virtual void compute() = 0;         // 计算逻辑
+    virtual QString showValue(){return outputs[0].toString();};           // 显示的字符串
 
     // 可编辑接口（默认不可编辑）
     virtual bool isEditable() const { return false; }

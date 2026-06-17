@@ -14,6 +14,7 @@ public:
         double res = inputs[0].toDouble() + inputs[1].toDouble();
         outputs[0] = res;
     }
+
     QString typeName() const override { return "AddNode"; }
     void fromJson(const QJsonObject &o) override {
         Q_UNUSED(o);
