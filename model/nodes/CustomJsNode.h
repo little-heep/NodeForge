@@ -6,7 +6,7 @@
 #define NODEFORGE_CUSTOMJSNODE_H
 
 #include "../NodeModel.h"
-
+#include "../NodeFactory.h"
 #include <QJSEngine>
 #include <QJSValue>
 #include <QDebug>
@@ -15,8 +15,8 @@
 // 用户自定义 JS 节点：要求脚本中定义 function compute(inputs) { return [...]; }
 class CustomJsNode : public NodeModel {
 public:
-    CustomJsNode(const QString& nodeName, int inputCount, int outputCount, const QString& jsCode)
-        : m_name(nodeName), m_jsCode(jsCode) {
+    explicit CustomJsNode(const QString& nodeName = "Custom", int inputCount = 0, int outputCount = 1, const QString& jsCode = QString())
+    : m_name(nodeName), m_jsCode(jsCode) {
         inputs.assign(std::max(0, inputCount), QVariant());
         outputs.assign(std::max(0, outputCount), QVariant());
     }
@@ -96,5 +96,7 @@ private:
     QString m_jsCode;
 };
 
+// 2. 文件末尾注册自身：
+REGISTER_NODE(CustomJsNode)
 
 #endif //NODEFORGE_CUSTOMJSNODE_H

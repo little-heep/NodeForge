@@ -5,6 +5,7 @@
 #ifndef NODEFORGE_ADDNODE_H
 #define NODEFORGE_ADDNODE_H
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 // 加法节点
 class AddNode : public NodeModel {
 public:
@@ -22,5 +23,8 @@ public:
         outputs.assign(1, 0.0);
     }
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(AddNode)
 
 #endif //NODEFORGE_ADDNODE_H

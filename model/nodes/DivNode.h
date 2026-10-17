@@ -5,6 +5,7 @@
 #ifndef NODEFORGE_DIVNODE_H
 #define NODEFORGE_DIVNODE_H
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include <QDebug>
 
 // 除法节点
@@ -31,4 +32,7 @@ public:
         outputs.assign(1, 0.0);
     }
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(DivNode)
 #endif //NODEFORGE_DIVNODE_H

@@ -5,11 +5,12 @@
 #ifndef NODEFORGE_NUMBERNODE_H
 #define NODEFORGE_NUMBERNODE_H
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include "QInputDialog"
 // 数字输入节点
 class NumberNode : public NodeModel {
 public:
-    NumberNode(double val) { outputs.push_back(val); }
+    explicit NumberNode(double val=0.0) { outputs.push_back(val); }
     QString caption() const override { return "Number"; }
     void compute() override { /* 输入节点不需要计算 */ }
     void setValue(double val) { outputs[0] = val; }
@@ -40,5 +41,6 @@ public:
         }
     }
 };
-
+// 2. 文件末尾注册自身：
+REGISTER_NODE(NumberNode)
 #endif //NODEFORGE_NUMBERNODE_H

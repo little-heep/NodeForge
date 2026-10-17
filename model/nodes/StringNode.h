@@ -5,6 +5,7 @@
 #ifndef NODEFORGE_STRINGNODE_H
 #define NODEFORGE_STRINGNODE_H
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include <QString>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -12,7 +13,7 @@
 // 字符串输入节点
 class StringNode : public NodeModel {
 public:
-    StringNode(QString val) { outputs.push_back(val); }
+    explicit StringNode(const QString& val = QString()) { outputs.push_back(val); }
     QString caption() const override { return "string"; }
     void compute() override {}
     void setValue(QString val) { outputs[0] = val; }
@@ -44,5 +45,8 @@ public:
         }
     }
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(StringNode)
 
 #endif //NODEFORGE_STRINGNODE_H

@@ -5,13 +5,14 @@
 #define NODEFORGE_SINEWAVENODE_H
 
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include "../ui/dialogs/SineWaveDialog.h"
 #include <QtMath>
 
 // 正弦波生成器节点：输出一个采样序列
 class SineWaveNode : public NodeModel {
 public:
-    SineWaveNode(double frequency = 1.0,
+   explicit SineWaveNode(double frequency = 1.0,
                  double amplitude = 1.0,
                  double phase = 0.0,
                  double sampleRate = 100.0,
@@ -87,5 +88,8 @@ private:
     double m_sampleRate = 100.0;
     int m_sampleCount = 200;
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(SineWaveNode)
 
 #endif // NODEFORGE_SINEWAVENODE_H

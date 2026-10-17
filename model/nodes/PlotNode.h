@@ -2,6 +2,7 @@
 #define NODEFORGE_PLOTNODE_H
 
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include "../../ui/dialogs/SignalPlotDialog.h"
 
 // 显示节点：只保存数据，不负责绘图UI
@@ -34,5 +35,8 @@ public:
         if (inputs.empty()) inputs.assign(1, QVariant());
     }
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(PlotNode)
 
 #endif // NODEFORGE_PLOTNODE_H

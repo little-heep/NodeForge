@@ -5,6 +5,7 @@
 #ifndef NODEFORGE_SUBNODE_H
 #define NODEFORGE_SUBNODE_H
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 
 // 减法节点
 class SubNode : public NodeModel {
@@ -24,5 +25,6 @@ public:
         outputs.assign(1, 0.0);
     }
 };
-
+// 2. 文件末尾注册自身：
+REGISTER_NODE(SubNode)
 #endif //NODEFORGE_SUBNODE_H

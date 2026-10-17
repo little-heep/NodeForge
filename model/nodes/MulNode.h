@@ -6,6 +6,7 @@
 #define NODEFORGE_MULNODE_H
 
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 
 // 乘法节点
 class MulNode : public NodeModel {
@@ -25,5 +26,8 @@ public:
         outputs.assign(1, 0.0);
     }
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(MulNode)
 
 #endif //NODEFORGE_MULNODE_H

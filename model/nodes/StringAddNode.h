@@ -5,6 +5,7 @@
 #ifndef NODEFORGE_STRINGADDNODE_H
 #define NODEFORGE_STRINGADDNODE_H
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include <QString>
 
 // 字符串连接节点
@@ -29,4 +30,7 @@ public:
         outputs.assign(1, 0.0);
     }
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(StringAddNode)
 #endif //NODEFORGE_STRINGADDNODE_H

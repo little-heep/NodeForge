@@ -3,12 +3,13 @@
 
 #include "../NodeModel.h"
 #include <QInputDialog>
+#include "../NodeFactory.h"
 #include <QtMath>
 
 // 一阶低通滤波器
 class LowPassFilterNode : public NodeModel {
 public:
-    LowPassFilterNode(double alpha = 0.2)
+    explicit LowPassFilterNode(double alpha = 0.2)
         : m_alpha(alpha) {
         inputs.assign(1, QVariant());
         outputs.push_back(QVariant());
@@ -66,5 +67,8 @@ public:
 private:
     double m_alpha = 0.2;
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(LowPassFilterNode)
 
 #endif // NODEFORGE_LOWPASSFILTERNODE_H

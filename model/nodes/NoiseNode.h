@@ -2,6 +2,7 @@
 #define NODEFORGE_NOISENODE_H
 
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include "../ui/dialogs/NoiseDialog.h"
 #include <QRandomGenerator>
 #include <QtMath>
@@ -9,7 +10,7 @@
 // 噪声发生器节点：输出随机噪声序列
 class NoiseNode : public NodeModel {
 public:
-    NoiseNode(double mean = 0.0,
+   explicit NoiseNode(double mean = 0.0,
               double sigma = 0.2,
               int sampleCount = 200)
         : m_mean(mean),
@@ -77,5 +78,8 @@ private:
     double m_sigma = 0.2;
     int m_sampleCount = 200;
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(NoiseNode)
 
 #endif // NODEFORGE_NOISENODE_H

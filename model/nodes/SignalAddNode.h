@@ -2,6 +2,7 @@
 #define NODEFORGE_SIGNALADDNODE_H
 
 #include "../NodeModel.h"
+#include "../NodeFactory.h"
 #include <algorithm>
 
 // 信号相加器：两路序列逐点相加
@@ -38,5 +39,8 @@ public:
         outputs.assign(1, QVariant());
     }
 };
+
+// 2. 文件末尾注册自身：
+REGISTER_NODE(SignalAddNode)
 
 #endif // NODEFORGE_SIGNALADDNODE_H
