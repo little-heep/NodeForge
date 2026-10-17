@@ -32,6 +32,28 @@
 #include "../model/nodes/LowPassFilterNode.h"
 #include "../model/nodes/PlotNode.h"
 
+// 定义节点列表元数据结构
+   struct NodeItemMeta {
+       QString category;
+       QString displayName;
+       QString typeName; // 与工厂中注册的类名严格保持一致
+   };
+const std::vector<NodeItemMeta> nodeMetas = {
+    {"输入节点", "   Number Node", "NumberNode"},
+    {"输入节点", "   String Node", "StringNode"},
+    {"字符运算", "   字符拼接",     "StringAddNode"},
+    {"数学运算", "   Add Node",     "AddNode"},
+    {"数学运算", "   Subtract Node","SubNode"},
+    {"数学运算", "   Multiply Node","MulNode"},
+    {"数学运算", "   Division Node","DivNode"},
+    {"信号分析", "   正弦波生成器", "SineWaveNode"},
+    {"信号分析", "   噪声发生器",   "NoiseNode"},
+    {"信号分析", "   信号相加器",   "SignalAddNode"},
+    {"信号分析", "   低通滤波器",   "LowPassFilterNode"},
+    {"信号分析", "   折线图显示",   "PlotNode"},
+    {"自定义运算", "   Custom JS Node", "CustomJsNode"}
+};
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     resize(800, 600);
@@ -214,90 +236,25 @@ void MainWindow::setupComponentDock()
     // 组件列表
     QListWidget* componentList = new QListWidget();
 
-    // 添加分类
-    QListWidgetItem* categoryInput = new QListWidgetItem("输入节点");
-    categoryInput->setFlags(Qt::NoItemFlags);  // 不可选择
-    categoryInput->setBackground(QBrush(QColor(240, 240, 240)));
-    QFont catFont = categoryInput->font();
+    QFont catFont = componentList->font();
     catFont.setBold(true);
-    categoryInput->setFont(catFont);
-    componentList->addItem(categoryInput);
 
-    QListWidgetItem* numberItem = new QListWidgetItem("   Number Node");
-    numberItem->setData(Qt::UserRole, "NumberNode");
-    componentList->addItem(numberItem);
-
-    QListWidgetItem* stringItem = new QListWidgetItem("   String Node");
-    stringItem->setData(Qt::UserRole, "StringNode");
-    componentList->addItem(stringItem);
-
-    QListWidgetItem* categoryString = new QListWidgetItem("字符运算");
-    categoryString->setFlags(Qt::NoItemFlags);  // 不可选择
-    categoryString->setBackground(QBrush(QColor(240, 240, 240)));
-    categoryString->setFont(catFont);
-    componentList->addItem(categoryString);
-
-    QListWidgetItem* spliceItem = new QListWidgetItem("   字符拼接");
-    spliceItem->setData(Qt::UserRole, "SpliceNode");
-    componentList->addItem(spliceItem);
-
-    QListWidgetItem* categoryMath = new QListWidgetItem("数学运算");
-    categoryMath->setFlags(Qt::NoItemFlags);
-    categoryMath->setBackground(QBrush(QColor(240, 240, 240)));
-    categoryMath->setFont(catFont);
-    componentList->addItem(categoryMath);
-
-    QListWidgetItem* addItem = new QListWidgetItem("   Add Node");
-    addItem->setData(Qt::UserRole, "AddNode");
-    componentList->addItem(addItem);
-
-    QListWidgetItem* subItem = new QListWidgetItem("   Subtract Node");
-    subItem->setData(Qt::UserRole, "SubtractNode");
-    componentList->addItem(subItem);
-
-    QListWidgetItem* mulItem = new QListWidgetItem("   Multiply Node");
-    mulItem->setData(Qt::UserRole, "MultiplyNode");
-    componentList->addItem(mulItem);
-
-    QListWidgetItem* divItem = new QListWidgetItem("   Division Node");
-    divItem->setData(Qt::UserRole, "DivisionNode");
-    componentList->addItem(divItem);
-
-    QListWidgetItem* categorySignal = new QListWidgetItem("信号分析");
-    categorySignal->setFlags(Qt::NoItemFlags);
-    categorySignal->setBackground(QBrush(QColor(240, 240, 240)));
-    categorySignal->setFont(catFont);
-    componentList->addItem(categorySignal);
-
-    QListWidgetItem* sineItem = new QListWidgetItem("   正弦波生成器");
-    sineItem->setData(Qt::UserRole, "SineWaveNode");
-    componentList->addItem(sineItem);
-
-    QListWidgetItem* noiseItem = new QListWidgetItem("   噪声发生器");
-    noiseItem->setData(Qt::UserRole, "NoiseNode");
-    componentList->addItem(noiseItem);
-
-    QListWidgetItem* signalAddItem = new QListWidgetItem("   信号相加器");
-    signalAddItem->setData(Qt::UserRole, "SignalAddNode");
-    componentList->addItem(signalAddItem);
-
-    QListWidgetItem* lowPassItem = new QListWidgetItem("   低通滤波器");
-    lowPassItem->setData(Qt::UserRole, "LowPassFilterNode");
-    componentList->addItem(lowPassItem);
-
-    QListWidgetItem* plotItem = new QListWidgetItem("   折线图显示");
-    plotItem->setData(Qt::UserRole, "PlotNode");
-    componentList->addItem(plotItem);
-
-    QListWidgetItem* categoryCustom = new QListWidgetItem("自定义运算");
-    categoryCustom->setFlags(Qt::NoItemFlags);
-    categoryCustom->setBackground(QBrush(QColor(240, 240, 240)));
-    categoryCustom->setFont(catFont);
-    componentList->addItem(categoryCustom);
-
-    QListWidgetItem* customJsItem = new QListWidgetItem("   Custom JS Node");
-    customJsItem->setData(Qt::UserRole, "CustomJsNode");
-    componentList->addItem(customJsItem);
+    // 添加分类
+    // 自动按分类分组生成列表
+    QString currentCategory;
+    for (const auto& meta : nodeMetas) {
+        if (meta.category != currentCategory) {
+            currentCategory = meta.category;
+            QListWidgetItem* catItem = new QListWidgetItem(currentCategory);
+            catItem->setFlags(Qt::NoItemFlags); // 分组项不可点击
+            catItem->setBackground(QBrush(QColor(240, 240, 240)));
+            catItem->setFont(catFont);
+            componentList->addItem(catItem);
+        }
+        QListWidgetItem* item = new QListWidgetItem(meta.displayName);
+        item->setData(Qt::UserRole, meta.typeName);
+        componentList->addItem(item);
+    }
 
     layout->addWidget(componentList);
 
@@ -310,149 +267,28 @@ void MainWindow::setupComponentDock()
     // 双击添加节点到场景
     connect(componentList, &QListWidget::itemDoubleClicked,
             [this](QListWidgetItem* item) {
-                if (item->flags() == Qt::NoItemFlags) return;  // 分类项不可添加
-
+                if (item->flags() == Qt::NoItemFlags) return; // 分类项忽略
                 QString nodeType = item->data(Qt::UserRole).toString();
                 QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-                if (nodeType == "NumberNode") {
-                    // auto* numberNode = new NumberNode(2);
-                    // m_graph.addNode(numberNode);
-                    // auto* nodeItem = new NodeItem("Number",0,1, numberNode, &m_graph);
-                    // nodeItem->setPos(centerPos);
-                    // m_scene->addItem(nodeItem);
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "NumberNode";
-                    QJsonObject data;
-                    data["value"] = 0;
-                    nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Number Node", 2000);
-                } else if (nodeType == "AddNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "AddNode";
-                    QJsonObject data;
-                    data["value"] = 0;
-                    nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Add Node", 2000);
-                }else if (nodeType == "StringNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "StringNode";
-                    QJsonObject data;
-                    data["value"] = "hello";
-                    nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 String Node", 2000);
-                }else if (nodeType == "MultiplyNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "MulNode";
-                    QJsonObject data;
-                    nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Multiply Node", 2000);
-                }else if (nodeType == "DivisionNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "DivNode";
-                    QJsonObject data;
-                    nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Division Node", 2000);
-                }else if (nodeType == "SubtractNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "SubNode";
-                    QJsonObject data;
-                    nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Subtract Node", 2000);
-                }else if (nodeType == "SpliceNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "StringAddNode";
-                    QJsonObject data;
-                    nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Concat Node", 2000);
-                }else if (nodeType == "CustomJsNode") {
+                QJsonObject nodeObj;
+                nodeObj["type"] = nodeType;
+                // 唯一具有特殊弹窗交互的节点：CustomJsNode
+                if (nodeType == "CustomJsNode") {
                     CustomNodeDialog dlg(this);
                     if (dlg.exec() != QDialog::Accepted) {
                         return;
                     }
-
                     CustomNodeConfig cfg = dlg.config();
-
-                    // auto* customNode = new CustomJsNode(cfg.nodeName, cfg.inputCount, cfg.outputCount, cfg.jsCode);
-                    // m_graph.addNode(customNode);
-                    //
-                    // auto* nodeItem = new NodeItem(cfg.nodeName, cfg.inputCount, cfg.outputCount, customNode, &m_graph);
-                    //QPointF centerPos = m_view->mapToScene(m_view->viewport()->rect().center());
-                    // nodeItem->setPos(centerPos);
-                    // m_scene->addItem(nodeItem);
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "CustomJsNode";
                     QJsonObject data;
                     data["name"] = cfg.nodeName;
                     data["inputCount"] = cfg.inputCount;
                     data["outputCount"] = cfg.outputCount;
                     data["jsCode"] = cfg.jsCode;
                     nodeObj["data"] = data;
-
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Custom JS Node", 2000);
-                } else if (nodeType == "SineWaveNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "SineWaveNode";
-                    QJsonObject data;
-                    data["frequency"] = 1.0;
-                    data["amplitude"] = 1.0;
-                    data["phase"] = 0.0;
-                    data["sampleRate"] = 100.0;
-                    data["sampleCount"] = 200;
-                    nodeObj["data"] = data;
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Sine Wave Node", 2000);
-
-                } else if (nodeType == "NoiseNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "NoiseNode";
-                    QJsonObject data;
-                    data["mean"] = 0.0;
-                    data["sigma"] = 0.2;
-                    data["sampleCount"] = 200;
-                    nodeObj["data"] = data;
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Noise Node", 2000);
-
-                } else if (nodeType == "SignalAddNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "SignalAddNode";
-                    QJsonObject data;
-                    nodeObj["data"] = data;
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Signal Add Node", 2000);
-
-                } else if (nodeType == "LowPassFilterNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "LowPassFilterNode";
-                    QJsonObject data;
-                    data["alpha"] = 0.2;
-                    nodeObj["data"] = data;
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Low Pass Node", 2000);
-
-                } else if (nodeType == "PlotNode") {
-                    QJsonObject nodeObj;
-                    nodeObj["type"] = "PlotNode";
-                    QJsonObject data;
-                    nodeObj["data"] = data;
-                    m_editor->requestAddNode(nodeObj, centerPos);
-                    statusBar()->showMessage("已添加 Plot Node", 2000);
-                };
+                }
+                // 其余所有常规节点直接发送创建请求，工厂会自动生成带默认参数的节点
+                m_editor->requestAddNode(nodeObj, centerPos);
+                statusBar()->showMessage(QString("已添加 %1").arg(item->text().trimmed()), 2000);
             });
 
     m_componentDock->setWidget(dockContent);
